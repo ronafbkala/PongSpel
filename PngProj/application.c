@@ -19,7 +19,8 @@ void run_application()
     Ball ball;
     initialize_ball(&ball, renderer);
 
-
+    Paddle paddle; 
+    initialize_paddle(&paddle, renderer);
 
     while (!quit)
     {
@@ -36,13 +37,16 @@ void run_application()
         
         // Move the ball
         update_ball(&ball, 0.016f);
+        // Move the paddle
+         update_paddle(&paddle, 0.016f);
         //update_ball(&ball, 0.016f);
         render_ball(&ball, renderer);
-
+        render_paddle(&paddle, renderer); 
         SDL_RenderPresent(renderer);
     }
 
     destroy_ball(&ball);
+    destroy_paddle(&paddle); 
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
     SDL_Quit();
