@@ -1,6 +1,6 @@
 #include "paddle.h"
-#include <SDL2/SDL_image.h>
-#include <SDL2/SDL.h>
+#include <SDL_image.h>
+#include <SDL.h>
 
 
 
@@ -19,10 +19,16 @@ void update_paddle(Paddle* paddle, float delta_time) {
     const Uint8* state = SDL_GetKeyboardState(NULL);
 
     if (state[SDL_SCANCODE_LEFT]) {
-        paddle->x -= paddle->speed * delta_time;
+        //paddle->x -= paddle->speed * delta_time;
+        if (paddle->x - paddle->width/2 > 0) { // check if paddle is at the left edge
+            paddle->x -= paddle->speed * delta_time;
+        }
     }
     if (state[SDL_SCANCODE_RIGHT]) {
-        paddle->x += paddle->speed * delta_time;
+        //paddle->x += paddle->speed * delta_time;
+        if (paddle->x + paddle->width/2 < 800) { // check if paddle is at the right edge
+            paddle->x += paddle->speed * delta_time;
+        }
     }
 }
 

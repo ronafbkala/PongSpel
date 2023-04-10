@@ -2,6 +2,7 @@
 #define BALL_H
 
 #include <SDL.h>
+#include "paddle.h"
 
 
 typedef struct {
@@ -15,7 +16,7 @@ typedef struct {
 } Ball;
 
 void initialize_ball(Ball* ball, SDL_Renderer* renderer);
-void update_ball(Ball* ball, float delta_time);
+void update_ball(Ball* ball, Paddle *paddle,float delta_time);
 void render_ball(Ball* ball, SDL_Renderer* renderer);
 void destroy_ball(Ball* ball);
 

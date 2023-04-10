@@ -1,6 +1,7 @@
 #include "ball.h"
 #include <SDL_image.h>
 #include <math.h>
+#include "paddle.h"
 
 #define PI 3.14159265f
 
@@ -16,9 +17,17 @@ void initialize_ball(Ball* ball, SDL_Renderer* renderer) {
     SDL_FreeSurface(surface);
 }
 
-void update_ball(Ball* ball, float delta_time) {
+void update_ball(Ball* ball, Paddle* paddle, float delta_time) {
     ball->x += ball->dx * ball->speed * delta_time;
     ball->y += ball->dy * ball->speed * delta_time;
+
+    // check collision with paddle
+    if (ball->y + ball->radius >= paddle->y && ball->y - ball->radius <= paddle->y + paddle->height &&
+        ball->x + ball->radius >= paddle->x && ball->x - ball->radius <= paddle->x + paddle->width) {
+        ball->dy *= -1;
+    }
+
+    // check collision with walls
     if (ball->x - ball->radius < 0 || ball->x + ball->radius > 800) {
         ball->dx *= -1;
     }

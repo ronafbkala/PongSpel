@@ -1,4 +1,4 @@
-OBJS = main.c application.c ball.c
+OBJS = main.c application.c ball.c paddle.c
 OBJ_NAME = out
 CC = gcc
 
