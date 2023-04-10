@@ -69,37 +69,37 @@ void run_application()
                     play_button_pressed = 1;
                 }
             }
-        }
+    }
 
-        SDL_RenderClear(renderer);
-        if (!play_button_pressed)
-        {
-            // Draw the Play button image
-            SDL_RenderCopy(renderer, play_button_texture, NULL, &play_button_rect);
-        }
-        else if(!game_over)
-        {
-        // Move the ball
-        update_ball(&ball,&paddle, 0.016f);
-         //update_ball(&ball, 0.016f);
-         render_ball(&ball, renderer);
-            
-        // Move and render the paddle
-         update_paddle(&paddle, 0.016f);
-         render_paddle(&paddle, renderer);
-         // check collision with bottom wall
-        if(ball.y + ball.radius >= 600) {
-            game_over = 1;
-        }
-         else{
-        // draw the game over image
-        SDL_Rect game_over_rect = {0, 0, 300, 100};
-        SDL_GetWindowSize(window, &game_over_rect.w, &game_over_rect.h);
-        game_over_rect.x = (game_over_rect.w - game_over_rect.w) / 2;
-        game_over_rect.y = (game_over_rect.h - game_over_rect.h) / 2;
+    SDL_RenderClear(renderer);
+    if (!play_button_pressed)
+    {
+        // Draw the Play button image
+        SDL_RenderCopy(renderer, play_button_texture, NULL, &play_button_rect);
+    }
+    else if(!game_over)
+    {
+    // Move the ball
+    update_ball(&ball,&paddle, 0.016f);
+     //update_ball(&ball, 0.016f);
+     render_ball(&ball, renderer);
 
-        SDL_RenderCopy(renderer, game_over_texture, NULL, &game_over_rect);
-        }
+    // Move and render the paddle
+     update_paddle(&paddle, 0.016f);
+     render_paddle(&paddle, renderer);
+     // check collision with bottom wall
+    if(ball.y + ball.radius >= 600) {
+        game_over = 1;
+    }
+     else{
+    // draw the game over image
+    SDL_Rect game_over_rect = {0, 0, 300, 100};
+    SDL_GetWindowSize(window, &game_over_rect.w, &game_over_rect.h);
+    game_over_rect.x = (game_over_rect.w - game_over_rect.w) / 2;
+    game_over_rect.y = (game_over_rect.h - game_over_rect.h) / 2;
+
+    SDL_RenderCopy(renderer, game_over_texture, NULL, &game_over_rect);
+    }
         
         SDL_RenderPresent(renderer);
     }
