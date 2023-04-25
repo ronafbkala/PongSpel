@@ -1,4 +1,4 @@
-#include <SDL.h>
+#include <SDL2/SDL.h>
 #include <stdio.h>
 #ifndef PADDLE_H
 #define PADDLE_H
@@ -13,11 +13,13 @@ typedef struct {
     float speed;
     SDL_Texture* texture;
 } Paddle;
-
-void initialize_paddle(Paddle* paddle, SDL_Renderer* renderer);
-void update_paddle(Paddle* paddle, float delta_time);
+Paddle* initialize_paddle(SDL_Renderer* renderer);
+Paddle* initialize_paddle2(SDL_Renderer* renderer);
+Paddle* initialize_paddle3(SDL_Renderer* renderer);
+Paddle* initialize_paddle4(SDL_Renderer* renderer);
+void update_paddle(Paddle* paddle, Paddle* paddle2, Paddle* paddle3, Paddle* paddle4, float delta_time);
 void render_paddle(Paddle* paddle, SDL_Renderer* renderer);
-void destroy_paddle(Paddle* paddle);
+void destroy_paddle(Paddle* paddle, Paddle* paddle2, Paddle* paddle3, Paddle* paddle4);
 
 #endif
 

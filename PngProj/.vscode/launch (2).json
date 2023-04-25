@@ -8,8 +8,8 @@
       "args": [],
       "stopAtEntry": false,
       "externalConsole": true,
-      "cwd": "c:/GitHub/PongSpel/PngProj",
-      "program": "c:/GitHub/PongSpel/PngProj/build/Debug/outDebug",
+      "cwd": "c:/Last-version",
+      "program": "c:/Last-version/build/Debug/outDebug",
       "MIMode": "gdb",
       "miDebuggerPath": "gdb",
       "setupCommands": [
