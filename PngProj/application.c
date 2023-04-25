@@ -4,10 +4,28 @@
 #include "application.h"
 #include "ball.h"
 #include "paddle.h"
+#include <SDL2/SDL_mixer.h>
 
 void run_application()
 {
     SDL_Init(SDL_INIT_VIDEO);
+     // Initialize SDL_mixer
+    if (Mix_OpenAudio(MIX_DEFAULT_FREQUENCY, MIX_DEFAULT_FORMAT, 2, 1024) < 0)
+    {
+        SDL_Log("Failed to initialize SDL_mixer: %s", Mix_GetError());
+        return;
+    }
+    Mix_Music* music = Mix_LoadMUS("Cyberpunk_Moonlight_Sonata.mp3");
+    if (!music)
+    {
+        SDL_Log("Failed to load music: %s", Mix_GetError());
+        return;
+    }
+            if (Mix_PlayMusic(music, -1) < 0)
+    {
+        SDL_Log("Failed to play music: %s", Mix_GetError());
+        return;
+    }
 
     SDL_Window* window = SDL_CreateWindow("My Pong Game", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 800, 600, SDL_WINDOW_SHOWN);
     SDL_Renderer* renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
@@ -101,6 +119,10 @@ void run_application()
             // check collision with all walls
             if (ball.y + ball.radius >= 600 ||ball.y - ball.radius <= 0 || ball.x - ball.radius <= 0 || ball.x + ball.radius >= 800) {
                 game_over = 1;
+                // Stoppar musiken
+                Mix_HaltMusic();
+                // Stänger ner ljudsystemet
+                Mix_CloseAudio();
             }
         }
         else{
