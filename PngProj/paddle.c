@@ -14,7 +14,7 @@ Paddle* initialize_paddle(SDL_Renderer* renderer) {
     paddle->y = 590;
     paddle->width = 120;
     paddle->height = 25;
-    paddle->speed = 15;
+    paddle->speed = 300;
     SDL_Surface* surface = IMG_Load("paddle.JPG");
     paddle->texture = SDL_CreateTextureFromSurface(renderer, surface);
     SDL_FreeSurface(surface);
@@ -30,7 +30,7 @@ Paddle* initialize_paddle2(SDL_Renderer* renderer) {
     paddle->y = 200;
     paddle->width = 25;
     paddle->height = 120;
-    paddle->speed = 15;
+    paddle->speed = 300;
 
     SDL_Surface* surface = IMG_Load("paddle.JPG");
     paddle->texture = SDL_CreateTextureFromSurface(renderer, surface);
@@ -48,7 +48,7 @@ Paddle* initialize_paddle3(SDL_Renderer* renderer) {
     paddle->y = 10;
     paddle->width = 120;
     paddle->height = 25;
-    paddle->speed = 15;
+    paddle->speed = 300;
     SDL_Surface* surface = IMG_Load("paddle.JPG");
     paddle->texture = SDL_CreateTextureFromSurface(renderer, surface);
     SDL_FreeSurface(surface);
@@ -65,7 +65,7 @@ Paddle* initialize_paddle4(SDL_Renderer* renderer) {
     paddle->y = 200;
     paddle->width = 25;
     paddle->height = 120;
-    paddle->speed = 15;
+    paddle->speed = 300;
     
 
     SDL_Surface* surface = IMG_Load("paddle.JPG");

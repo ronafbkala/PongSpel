@@ -3,13 +3,18 @@
 #include <math.h>
 
 #define PI 3.14159265f
+void update_ball_speed(Ball* ball){
+    if(ball->speed < 300.0f){
+        ball->speed *= 1.1f;
+    }
+}
 
 void initialize_ball(Ball* ball, SDL_Renderer* renderer) {
     ball->x = 400;
     ball->y = 300;
     ball->dx = cosf(45 * PI / 180);
     ball->dy = sinf(45 * PI / 180);
-    ball->speed = 5;
+    ball->speed = 100;
     ball->radius = 25;
     SDL_Surface* surface = IMG_Load("ball.png");
     ball->texture = SDL_CreateTextureFromSurface(renderer, surface);
@@ -25,21 +30,28 @@ void update_ball(Ball* ball, Paddle* paddle, Paddle* paddle2, Paddle* paddle3, P
     if (ball->y + ball->radius >= paddle->y && ball->y - ball->radius <= paddle->y + paddle->height &&
         ball->x + ball->radius >= paddle->x && ball->x - ball->radius <= paddle->x + paddle->width) {
         ball->dy *= -1;
+        update_ball_speed(ball);
     }
 
     if (ball->y + ball->radius >= paddle2->y && ball->y - ball->radius <= paddle2->y + paddle2->height &&
         ball->x + ball->radius >= paddle2->x && ball->x - ball->radius <= paddle2->x + paddle2->width) {
         ball->dx *= -1;
+        
+        update_ball_speed(ball);
+
     }
 
     if (ball->y + ball->radius >= paddle3->y && ball->y - ball->radius <= paddle3->y + paddle3->height &&
         ball->x + ball->radius >= paddle3->x && ball->x - ball->radius <= paddle3->x + paddle3->width) {
         ball->dy *= -1;
+        update_ball_speed(ball);
+
     }
 
     if (ball->y + ball->radius >= paddle4->y && ball->y - ball->radius <= paddle4->y + paddle4->height &&
         ball->x + ball->radius >= paddle4->x && ball->x - ball->radius <= paddle4->x + paddle4->width) {
         ball->dx *= -1;
+        update_ball_speed(ball);
     }
 
     // check collision with walls

@@ -6,6 +6,12 @@
 #include "paddle.h"
 #include <SDL2/SDL_mixer.h>
 
+const int FPS = 60;
+const int frameDelay = 1000 / FPS;
+
+Uint32 frameStart;
+int frameTime;
+
 void run_application()
 {
     SDL_Init(SDL_INIT_VIDEO);
@@ -75,6 +81,10 @@ void run_application()
 
     while (!quit)
     {
+        frameStart = SDL_GetTicks();
+
+
+
         while (SDL_PollEvent(&event))
         {
             if (event.type == SDL_QUIT)
@@ -137,6 +147,12 @@ void run_application()
 
 
         SDL_RenderPresent(renderer);
+
+        frameTime = SDL_GetTicks() - frameStart;
+
+        if (frameDelay > frameTime){
+            SDL_Delay(frameDelay - frameTime);
+        }
     }
 
     destroy_ball(&ball);
