@@ -4,8 +4,11 @@
 #include "application.h"
 #include "ball.h"
 #include "paddle.h"
+#include "collision.h"
 #include <SDL2/SDL_mixer.h>
-#include<stdbool.h>
+#include <stdbool.h>
+#include <SDL2/SDL_ttf.h>
+
 
 const int FPS = 60;
 const int frameDelay = 1000 / FPS;
@@ -13,7 +16,7 @@ const int frameDelay = 1000 / FPS;
 Uint32 frameStart;
 int frameTime;
 
-void initialize_sdl() 
+void initialize_sdl()
 {
     SDL_Init(SDL_INIT_VIDEO);
 }
@@ -27,9 +30,9 @@ void initialize_sdl_mixer()
     }
 }
 
-Mix_Music* load_music()
+Mix_Music *load_music()
 {
-    Mix_Music* music = Mix_LoadMUS("Cyberpunk_Moonlight_Sonata.mp3");
+    Mix_Music *music = Mix_LoadMUS("Cyberpunk_Moonlight_Sonata.mp3");
     if (!music)
     {
         SDL_Log("Failed to load music: %s", Mix_GetError());
@@ -38,7 +41,7 @@ Mix_Music* load_music()
     return music;
 }
 
-int play_music(Mix_Music* music) 
+int play_music(Mix_Music *music)
 {
     if (Mix_PlayMusic(music, -1) < 0)
     {
@@ -48,22 +51,23 @@ int play_music(Mix_Music* music)
     return 1;
 }
 
-SDL_Window* create_window()
+SDL_Window *create_window()
 {
     return SDL_CreateWindow("My Pong Game", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 800, 600, SDL_WINDOW_SHOWN);
 }
 
-SDL_Renderer* create_renderer(SDL_Window* window)
+SDL_Renderer *create_renderer(SDL_Window *window)
 {
     return SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
 }
 
-void set_render_draw_color(SDL_Renderer* renderer)
+
+void set_render_draw_color(SDL_Renderer *renderer)
 {
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
 }
-//////////////////////////
-void initialize_game_objects(SDL_Renderer* renderer, Ball* ball, Paddle** paddles)
+////////////////////////// vi ligger alla obj (4 paddle med olika positioner och ball i skärmen)
+void initialize_game_objects(SDL_Renderer *renderer, Ball *ball, Paddle **paddles)
 {
     initialize_ball(ball, renderer);
     paddles[0] = initialize_paddle(renderer);
@@ -72,19 +76,21 @@ void initialize_game_objects(SDL_Renderer* renderer, Ball* ball, Paddle** paddle
     paddles[3] = initialize_paddle4(renderer);
 }
 
-SDL_Texture* load_texture(SDL_Renderer* renderer, const char* path)
+// för ladda alla objs bilder i skärmen ?
+SDL_Texture *load_texture(SDL_Renderer *renderer, const char *path)
 {
-    SDL_Surface* surface = IMG_Load(path);
-    if (!surface) {
+    SDL_Surface *surface = IMG_Load(path);
+    if (!surface)
+    {
         SDL_Log("Failed to load image: %s", IMG_GetError());
         return NULL;
     }
-    SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
+    SDL_Texture *texture = SDL_CreateTextureFromSurface(renderer, surface);
     SDL_FreeSurface(surface);
     return texture;
 }
 
-void set_play_button_rect(SDL_Window* window, SDL_Rect* play_button_rect) 
+void set_play_button_rect(SDL_Window *window, SDL_Rect *play_button_rect)
 {
     SDL_GetWindowSize(window, &play_button_rect->x, &play_button_rect->y);
     play_button_rect->x /= 2;
@@ -93,12 +99,16 @@ void set_play_button_rect(SDL_Window* window, SDL_Rect* play_button_rect)
     play_button_rect->y -= play_button_rect->h / 2;
 }
 
-void handle_events(SDL_Event event, int* quit, int* play_button_pressed, SDL_Rect play_button_rect) {
-    while (SDL_PollEvent(&event)) {
-        if (event.type == SDL_QUIT) {
+void handle_events(SDL_Event event, int *quit, int *play_button_pressed, SDL_Rect play_button_rect)
+{
+    while (SDL_PollEvent(&event))
+    {
+        if (event.type == SDL_QUIT)
+        {
             *quit = 1;
         }
-        else if (event.type == SDL_MOUSEBUTTONDOWN) {
+        else if (event.type == SDL_MOUSEBUTTONDOWN)
+        {
             int x = event.button.x;
             int y = event.button.y;
 
@@ -112,30 +122,19 @@ void handle_events(SDL_Event event, int* quit, int* play_button_pressed, SDL_Rec
     }
 }
 
-void update_objects(Ball* ball, Paddle* paddles[], SDL_Renderer* renderer, float deltaTime) {
+void update_objects(Ball *ball, Paddle *paddles[], SDL_Renderer *renderer, float deltaTime)
+{
     // Update and render the ball
     update_ball(ball, paddles[0], paddles[1], paddles[2], paddles[3], deltaTime);
     render_ball(ball, renderer);
-    
+
     // Update and render the paddles
-    
     update_paddle(paddles[0], paddles[1], paddles[2], paddles[3], deltaTime);
     render_paddle(paddles[0], renderer);
     render_paddle(paddles[1], renderer);
     render_paddle(paddles[2], renderer);
     render_paddle(paddles[3], renderer);
-    
 }
-
-bool check_collision(Ball* ball) {
-    if (ball->y + ball->radius >= 600 || ball->y - ball->radius <= 0 || ball->x - ball->radius <= 0 || ball->x + ball->radius >= 800) {
-        return 1;
-    }
-    return 0;
-}
-
-
-
 
 
 
@@ -145,7 +144,7 @@ void run_application()
     initialize_sdl();
     initialize_sdl_mixer();
 
-    Mix_Music* music = load_music();
+    Mix_Music *music = load_music();
     if (!music)
     {
         SDL_Log("Failed to load music");
@@ -154,32 +153,51 @@ void run_application()
     {
         SDL_Log("Failed to play music");
     }
-    
-    SDL_Window* window = create_window();
-    SDL_Renderer* renderer = create_renderer(window);
+
+    SDL_Window *window = create_window();
+    SDL_Renderer *renderer = create_renderer(window);
 
     set_render_draw_color(renderer);
 
     Ball ball;
-    Paddle* paddles[4];
+    Paddle *paddles[4];
     initialize_game_objects(renderer, &ball, paddles);
 
-    SDL_Texture* play_button_texture = load_texture(renderer, "play.png");
-    SDL_Texture* game_over_texture = load_texture(renderer, "game_over.jpg");
-   
-    
+    SDL_Texture *play_button_texture = load_texture(renderer, "play.png");
+    SDL_Texture *game_over_texture = load_texture(renderer, "game_over.jpg");
+
     // Set the Play button position and size
     SDL_Rect play_button_rect;
     SDL_QueryTexture(play_button_texture, NULL, NULL, &play_button_rect.w, &play_button_rect.h);
     set_play_button_rect(window, &play_button_rect);
 
-    
+
+
+
+      if (TTF_Init() != 0) {                                 //använder SDL_ttf-biblioteket för att initiera ett TrueType-teckensnitt och ladda det från en teckensnittsfil på disken.
+        printf("TTF_Init() failed: %s\n", SDL_GetError());
+        
+    }
+
+    TTF_Font* font = TTF_OpenFont("C:\\Windows\\Fonts\\arial.ttf", 16);  // för att ladda ett TrueType-teckensnitt från en teckensnittsfil på disken.
+        if (!font) {
+            SDL_Log("Failed to load font: %s", TTF_GetError());
+            return;
+        }
+
     ///////////////////////////////////////-2-
     int quit = 0;
-    int play_button_pressed=0;
+    int play_button_pressed = 0;
     int game_over = 0;
+    int track = 0;
 
-    while (!quit)
+    //int all_players_points[4]={0};           // Array för att lagra alla spelarens points 
+    Player all_players_info[4];                // struct för att lagra alla spelarens info  
+   initPlayers(all_players_info);              // To Set alla plyers score to zero frön början 
+
+
+  printScore(renderer, font, all_players_info, window);
+    while (!quit) 
     {
         frameStart = SDL_GetTicks();
 
@@ -187,31 +205,47 @@ void run_application()
         handle_events(event, &quit, &play_button_pressed, play_button_rect);
         SDL_RenderClear(renderer);
 
-        if (!play_button_pressed) {
+        if (!play_button_pressed)
+        {
             // Draw the Play button image
             SDL_RenderCopy(renderer, play_button_texture, NULL, &play_button_rect);
+
         }
-        else if (!game_over) {
+        
+
+
+        else if (!game_over)
+        {
+              
+
             // Move,render the ball and the paddle
             update_objects(&ball, paddles, renderer, 0.018f);
 
-            // check collision with all walls
-            if (check_collision(&ball)) {
-                game_over = 1;
-                // Stoppar musiken
-                Mix_HaltMusic();
-                // Stänger ner ljudsystemet
-                Mix_CloseAudio();
-            }
-        }
-        else {
-            SDL_Rect game_over_rect = { 0, 0, 300, 100 };
-            SDL_GetWindowSize(window, &game_over_rect.w, &game_over_rect.h);
-            game_over_rect.x = (game_over_rect.w - game_over_rect.w) / 2;
-            game_over_rect.y = (game_over_rect.h - game_over_rect.h) / 2;
+            if (check_collision(&ball, paddles[0], paddles[1], paddles[2], paddles[3], all_players_info, renderer, font, window) == 1)     // return 1 när en spelare förlorar
+            {       
 
-            SDL_RenderCopy(renderer, game_over_texture, NULL, &game_over_rect);
-        }
+                track++;
+                if (track == 3)
+                {
+                    // Stoppar musiken
+                    Mix_HaltMusic();
+                    // Stänger ner ljudsystemet
+                    Mix_CloseAudio();
+                }
+            }
+          
+        } if (track == 3)
+ 
+            {
+                SDL_Rect game_over_rect = {0, 0, 300, 100};
+                SDL_GetWindowSize(window, &game_over_rect.w, &game_over_rect.h);
+                game_over_rect.x = (game_over_rect.w - game_over_rect.w) / 2;
+                game_over_rect.y = (game_over_rect.h - game_over_rect.h) / 2;
+
+                SDL_RenderCopy(renderer, game_over_texture, NULL, &game_over_rect);
+                game_over =1; 
+              
+            }
 
         SDL_RenderPresent(renderer);
 
@@ -224,7 +258,7 @@ void run_application()
 
     // Free game objects
     destroy_ball(&ball);
-    destroy_paddle(paddles[0], paddles[1], paddles[2], paddles[3]);
+    // destroy_paddle(paddles[0], paddles[1], paddles[2], paddles[3]);
 
     // Free resources
     SDL_DestroyTexture(game_over_texture);
