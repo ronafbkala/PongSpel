@@ -48,15 +48,9 @@ int main(int argc, char **argv)
 	UDPpacket *pRecive; 
 	UDPpacket *pSend;
 
-	Uint32 IPclient1 = 0;
-	Uint32 IPclient2 = 0;
-	Uint32 IPclient3 = 0;
-	Uint32 IPclient4 = 0;
 
-	Uint32 portClient1 = 0;
-	Uint32 portClient2 = 0;
-	Uint32 portClient3 = 0;
-	Uint32 portClient4 = 0;
+	IPaddress clients[4];
+	int nrOfClients = 0;
 
 	int state = 0; // 0 is start 1 is ongoing
 
@@ -96,188 +90,56 @@ int main(int argc, char **argv)
 				case 0:
 					
 					if(SDLNet_UDP_Recv(sd, pRecive)){
-						if(IPclient1 == 0 && portClient1 == 0){
-							printf("Client 1\n");
-							IPclient1 = pRecive->address.host;
-							portClient1 = pRecive->address.port;
-							pSend->address.host = IPclient1;
-							pSend->address.port = portClient1;
-							gameData.playerIndex = 1;
-							memcpy(pSend->data, &gameData, sizeof(Data));
-							pSend->len = sizeof(Data);
-							SDLNet_UDP_Send(sd, -1, pSend);
-							}else if(pRecive->address.port != portClient1  && IPclient2 == 0){								
-							printf("Client 2\n");
-							IPclient2 = pRecive->address.host;
-							portClient2 = pRecive->address.port;
-							pSend->address.host = IPclient2;
-							pSend->address.port = portClient2;
-							gameData.playerIndex = 2;
-							memcpy(pSend->data, &gameData, sizeof(Data));
-							pSend->len = sizeof(Data);
-							SDLNet_UDP_Send(sd, -1, pSend);
-							}else if(pRecive->address.port != portClient1 && pRecive->address.port != portClient2 && IPclient3 == 0){
-							printf("Client 3\n");
-							IPclient3 = pRecive->address.host;
-							portClient3 = pRecive->address.port;
-							pSend->address.host = IPclient3;
-							pSend->address.port = portClient3;
-							gameData.playerIndex = 3;
-							memcpy(pSend->data, &gameData, sizeof(Data));
-							pSend->len = sizeof(Data);
-							SDLNet_UDP_Send(sd, -1, pSend);
-							}else if(pRecive->address.port != portClient1 && pRecive->address.port != portClient2 && pRecive->address.port != portClient3 && IPclient4 == 0){
-							printf("Client 4\n");
-							IPclient4 = pRecive->address.host;
-							portClient4 = pRecive->address.port;
-							pSend->address.host = IPclient4;
-							pSend->address.port = portClient4;
-							gameData.playerIndex = 4;
-							memcpy(pSend->data, &gameData, sizeof(Data));
-							pSend->len = sizeof(Data);
-							SDLNet_UDP_Send(sd, -1, pSend);
+						int exists = 0;
+						for(int i=0;i<4;i++){
+							if(pRecive->address.host == clients[i].host && pRecive->address.port == clients[i].port){
+								exists = 1;
 							}
+						}
+						if(!exists){
+							clients[nrOfClients] = pRecive->address;
+							nrOfClients++;
+							printf("Client %d\n", nrOfClients);
+							gameData.playerIndex = nrOfClients;
+							memcpy(pSend->data, &gameData, sizeof(Data));
+							pSend->address = clients[nrOfClients-1];
+							pSend->len = sizeof(Data);
+							SDLNet_UDP_Send(sd, -1, pSend);
+						}
+						
 					}
-					if(IPclient1 != 0 && IPclient2 != 0 && IPclient3 != 0 && IPclient4 != 0){
+					if(clients[0].host != 0 && clients[1].host != 0 && clients[2].host != 0 && clients[3].host != 0){
 						gameData.playerIndex = 5;
 						memcpy(pSend->data, &gameData, sizeof(Data));
-						pSend->address.host = IPclient1;
-						pSend->address.port = portClient1;
 						pSend->len = sizeof(Data);
-						SDLNet_UDP_Send(sd, -1, pSend);
-						pSend->address.host = IPclient2;
-						pSend->address.port = portClient2;
-						SDLNet_UDP_Send(sd, -1, pSend);
-						pSend->address.host = IPclient3;
-						pSend->address.port = portClient3;
-						SDLNet_UDP_Send(sd, -1, pSend);
-						pSend->address.host = IPclient4;
-						pSend->address.port = portClient4;
-						SDLNet_UDP_Send(sd, -1, pSend);
-						state = 1;					
+						for(int i=0;i<nrOfClients;i++){
+							pSend->address = clients[i];
+							SDLNet_UDP_Send(sd, -1, pSend);
+						}
+						state = 1;
 					}
+					
 					break;
 				case 1:
-					
-					
+	
 					if(SDLNet_UDP_Recv(sd, pRecive)){
-					//printf("UDP Packet incoming\n");
-					//printf("\tData:    %s\n", pRecive->data);
-					//printf("\tAddress: %x %x\n", pRecive->address.host, pRecive->address.port);
 					memcpy(&gameData, pRecive->data, sizeof(Data));
 					update_ball(&gameData);
-						/*if (pRecive->address.port == portClient1){
-							//printf("Send to Client 2\n");
-							pSend->address.host = IPclient2;	
-							pSend->address.port = portClient2;
-							
-							gameData.playerIndex = 1;
-							pSend->len = sizeof(Data) ;
+					memcpy(pSend->data, &gameData, sizeof(Data));
+					pSend->len = sizeof(Data);
+					for(int i=0;i<nrOfClients;i++){
+							pSend->address = clients[i];
 							SDLNet_UDP_Send(sd, -1, pSend);
-							
-							//printf("Send to Client 3\n");
-							pSend->address.host = IPclient3;	
-							pSend->address.port = portClient3;
-							SDLNet_UDP_Send(sd, -1, pSend);
+						}
 
-							//printf("Send to Client 4\n");
-							pSend->address.host = IPclient4;	
-							pSend->address.port = portClient4;
-							SDLNet_UDP_Send(sd, -1, pSend);
-							
-							} else if (pRecive->address.port == portClient2){
-								//printf("Send to Client 1\n");    
-								pSend->address.host = IPclient1;	
-								pSend->address.port = portClient1;
-								gameData.playerIndex = 2;
-								memcpy(pSend->data, &gameData, sizeof(Data));
-								pSend->len = sizeof(Data);
-								SDLNet_UDP_Send(sd, -1, pSend);
-
-								//printf("Send to Client 3\n");
-								pSend->address.host = IPclient3;	
-								pSend->address.port = portClient3;
-								SDLNet_UDP_Send(sd, -1, pSend);
-								
-								//printf("Send to Client 4\n");
-								pSend->address.host = IPclient4;	
-								pSend->address.port = portClient4;
-								SDLNet_UDP_Send(sd, -1, pSend);
-
-							} else if (pRecive->address.port == portClient3){
-								//printf("Send to Client 1\n");    
-								pSend->address.host = IPclient1;	
-								pSend->address.port = portClient1;
-								gameData.playerIndex = 3;
-								memcpy(pSend->data, &gameData, sizeof(Data));
-								pSend->len = sizeof(Data) ;
-								SDLNet_UDP_Send(sd, -1, pSend);
-
-								//printf("Send to Client 2\n");
-								pSend->address.host = IPclient2;	
-								pSend->address.port = portClient2;
-								SDLNet_UDP_Send(sd, -1, pSend);
-								
-								//printf("Send to Client 4\n");
-								pSend->address.host = IPclient4;	
-								pSend->address.port = portClient4;
-								SDLNet_UDP_Send(sd, -1, pSend);
-
-							}else if (pRecive->address.port == portClient4){
-								//printf("Send to Client 1\n");    
-								pSend->address.host = IPclient1;	
-								pSend->address.port = portClient1;
-								gameData.playerIndex = 4;
-								memcpy(pSend->data, &gameData, sizeof(Data));
-								pSend->len = sizeof(Data);
-								SDLNet_UDP_Send(sd, -1, pSend);
-
-								//printf("Send to Client 2\n");
-								pSend->address.host = IPclient2;	
-								pSend->address.port = portClient2;
-								SDLNet_UDP_Send(sd, -1, pSend);
-								
-								//printf("Send to Client 3\n");
-								pSend->address.host = IPclient3;	
-								pSend->address.port = portClient3;
-								SDLNet_UDP_Send(sd, -1, pSend);
-							}
-					}else{*/
-							//update_ball(&gameData);
-							gameData.playerIndex = 5;
-							memcpy(pSend->data, &gameData, sizeof(Data));
-							pSend->len = sizeof(Data);
-							
-							pSend->address.host = IPclient1;	
-							pSend->address.port = portClient1;
-							SDLNet_UDP_Send(sd, -1, pSend);
-							pSend->address.host = IPclient2;	
-							pSend->address.port = portClient2;
-							SDLNet_UDP_Send(sd, -1, pSend);
-							pSend->address.host = IPclient3;	
-							pSend->address.port = portClient3;
-							SDLNet_UDP_Send(sd, -1, pSend);
-							pSend->address.host = IPclient4;	
-							pSend->address.port = portClient4;
-							SDLNet_UDP_Send(sd, -1, pSend);
 					}else{
 						update_ball(&gameData);
-							gameData.playerIndex = 5;
-							memcpy(pSend->data, &gameData, sizeof(Data));
-							pSend->len = sizeof(Data);
-							
-							pSend->address.host = IPclient1;	
-							pSend->address.port = portClient1;
+						memcpy(pSend->data, &gameData, sizeof(Data));
+						pSend->len = sizeof(Data);
+						for(int i=0;i<nrOfClients;i++){
+							pSend->address = clients[i];
 							SDLNet_UDP_Send(sd, -1, pSend);
-							pSend->address.host = IPclient2;	
-							pSend->address.port = portClient2;
-							SDLNet_UDP_Send(sd, -1, pSend);
-							pSend->address.host = IPclient3;	
-							pSend->address.port = portClient3;
-							SDLNet_UDP_Send(sd, -1, pSend);
-							pSend->address.host = IPclient4;	
-							pSend->address.port = portClient4;
-							SDLNet_UDP_Send(sd, -1, pSend);
+						}
 					}
 					break;
 			}

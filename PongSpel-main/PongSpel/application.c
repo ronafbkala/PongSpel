@@ -140,8 +140,6 @@ void update_objects(Ball *ball, Paddle *paddles[], SDL_Renderer *renderer, float
     //update_ball(ball, paddles[0], paddles[1], paddles[2], paddles[3], deltaTime);
     render_ball(ball, renderer);
     // Update and render the paddles
-
-    update_paddle(paddles[0], paddles[1], paddles[2], paddles[3], deltaTime, playerIndex);
     render_paddle(paddles[0], renderer);
     render_paddle(paddles[1], renderer);
     render_paddle(paddles[2], renderer);
@@ -158,17 +156,17 @@ void moveAllPaddles (Paddle* paddles[], Data *gameData, int myPlayerIndex)
         paddles[0]->x = gameData->downPaddle_x;
         paddles[0]->y = gameData->downPaddle_y;
     }
-    else if(myPlayerIndex != 2)
+    if(myPlayerIndex != 2)
      {
         paddles[1]->x = gameData->rightPaddle_x;
         paddles[1]->y = gameData->rightPaddle_y;
      }
-     else if(myPlayerIndex != 3)
+    if(myPlayerIndex != 3)
      {
         paddles[2]->x = gameData->upPaddle_x;
         paddles[2]->y = gameData->upPaddle_y;
      }
-     else if(myPlayerIndex != 4)
+    if(myPlayerIndex != 4)
     {
         paddles[3]->x = gameData->leftPaddle_x;
         paddles[3]->y = gameData->leftPaddle_y;
@@ -331,8 +329,6 @@ void run_application()
                     handle_events(event, &quit, &play_button_pressed, play_button_rect);
                     SDL_RenderClear(renderer);
 
-                    update_objects(&ball, paddles, renderer, 0.018f, myPlayerIndex, &gameData);
-
                     if (!game_over)
                     {
                         
@@ -362,16 +358,12 @@ void run_application()
                             game_over =1; 
                         
                         }
-
-                    SDL_RenderPresent(renderer);
-
-
+                    update_paddle(paddles[0], paddles[1], paddles[2], paddles[3], 0.018f, myPlayerIndex);                           
                     x_newPos = paddles[myPlayerIndex-1]->x;
                     y_newPos = paddles[myPlayerIndex-1]->y;
-                    if(x_oldPos != x_newPos || y_oldPos != y_newPos){
-                        printf("sent new position\n");
 
-                        //printf("Flag TO SEND -----------\n");
+                    if(x_oldPos != x_newPos || y_oldPos != y_newPos){
+                        printf("Flag TO SEND -----------\n");
                         //the host will send this data
                         //printf("New: %f %f Old: %f %f\n", x_newPos, y_newPos, x_oldPos, y_newPos);
                         if(myPlayerIndex == 1){
@@ -398,7 +390,8 @@ void run_application()
                     
                     if(SDLNet_UDP_Recv(sd,pRecive)){                 //receive the data as a client
                         
-                        //printf("Flag RECIEVED\n");
+                        printf("Flag RECIEVED\n");
+                        
                         memcpy(&gameData, pRecive->data, sizeof(Data));
                         /*printf("Data: %d %f %f %f %f %f %f %f %f %f %f\n", gameData.playerIndex, gameData.downPaddle_x, 
                     gameData.downPaddle_y, gameData.leftPaddle_x, gameData.leftPaddle_y, gameData.rightPaddle_x, 
@@ -419,7 +412,10 @@ void run_application()
                             
                             moveAllPaddles(paddles, &gameData, myPlayerIndex);
                         } */
-                        moveAllPaddles(paddles, &gameData, myPlayerIndex);
+                        if(paddles[0]->x != gameData.downPaddle_x || paddles[1]->y != gameData.rightPaddle_y || paddles[2]->x != gameData.upPaddle_x || paddles[3]->y != gameData.leftPaddle_y){
+                            moveAllPaddles(paddles, &gameData, myPlayerIndex);
+                        } 
+                        
                         ball.x = gameData.ball_x;
                         ball.y = gameData.ball_y;
                         /*render_ball(&ball, renderer);
@@ -428,6 +424,9 @@ void run_application()
                         render_paddle(paddles[2], renderer);
                         render_paddle(paddles[3], renderer);*/
                     }
+                    
+                    update_objects(&ball, paddles, renderer, 0.018f, myPlayerIndex, &gameData);
+                    SDL_RenderPresent(renderer);
                     break;
 
         }
