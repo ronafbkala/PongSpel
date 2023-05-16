@@ -81,7 +81,6 @@ Paddle* initialize_paddle4(SDL_Renderer* renderer) {
 
 void update_paddle(Paddle* paddle, Paddle* paddle2, Paddle* paddle3, Paddle* paddle4, float delta_time, int playerIndex) {
     const Uint8* state = SDL_GetKeyboardState(NULL);
-
     // update paddle 1
     if (state[SDL_SCANCODE_A] && playerIndex == 1) {
         if (paddle->x - paddle->width/2 > 0) { // check if paddle is at the left edge

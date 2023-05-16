@@ -10,6 +10,17 @@
 #include <SDL2/SDL_net.h>
 #include <SDL2/SDL_ttf.h>
 
+struct data 
+{
+	int playerIndex;
+	float downPaddle_x, downPaddle_y;
+	float upPaddle_x, upPaddle_y;
+	float rightPaddle_x, rightPaddle_y;
+	float leftPaddle_x, leftPaddle_y;
+	float ball_x, ball_y;
+};
+typedef struct data Data;
+
 
 const int FPS = 60;
 const int frameDelay = 1000 / FPS;
@@ -123,13 +134,13 @@ void handle_events(SDL_Event event, int *quit, int *play_button_pressed, SDL_Rec
     }
 }
 
-void update_objects(Ball *ball, Paddle *paddles[], SDL_Renderer *renderer, float deltaTime, int playerIndex)
+void update_objects(Ball *ball, Paddle *paddles[], SDL_Renderer *renderer, float deltaTime, int playerIndex, Data *gameData)
 {
     // Update and render the ball
     //update_ball(ball, paddles[0], paddles[1], paddles[2], paddles[3], deltaTime);
     render_ball(ball, renderer);
-
     // Update and render the paddles
+
     update_paddle(paddles[0], paddles[1], paddles[2], paddles[3], deltaTime, playerIndex);
     render_paddle(paddles[0], renderer);
     render_paddle(paddles[1], renderer);
@@ -139,32 +150,28 @@ void update_objects(Ball *ball, Paddle *paddles[], SDL_Renderer *renderer, float
 
 
 
-void moveAllPaddles (Paddle* paddles[], int index, float p1, float p2)
+void moveAllPaddles (Paddle* paddles[], Data *gameData, int myPlayerIndex)
 {
-    //printf("Flag 3 ----------- %d\n", index);
-    if(index == 1)
+    //printf("Flag 3 ----------- \n");
+    if(myPlayerIndex != 1)
     {
-        paddles[0]->x = p1;
-        paddles[0]->y = p2;
-        //printf("Moving to this %f %f\n", p1, p2);
+        paddles[0]->x = gameData->downPaddle_x;
+        paddles[0]->y = gameData->downPaddle_y;
     }
-    else if(index == 2)
+    else if(myPlayerIndex != 2)
      {
-        paddles[1]->x = p1;
-        paddles[1]->y = p2;
-        //printf("x and y index 2: %f %f\n", paddles[1]->x, paddles[1]->y);
+        paddles[1]->x = gameData->rightPaddle_x;
+        paddles[1]->y = gameData->rightPaddle_y;
      }
-     else if(index == 3)
+     else if(myPlayerIndex != 3)
      {
-        paddles[2]->x = p1;
-        paddles[2]->y = p2;
-        //printf("Index is: %d\n", index);
+        paddles[2]->x = gameData->upPaddle_x;
+        paddles[2]->y = gameData->upPaddle_y;
      }
-     else if(index == 4)
+     else if(myPlayerIndex != 4)
     {
-        paddles[3]->x = p1;
-        paddles[3]->y = p2;
-        //printf("Index is: %d\n", index);
+        paddles[3]->x = gameData->leftPaddle_x;
+        paddles[3]->y = gameData->leftPaddle_y;
     }
 
 }
@@ -176,14 +183,13 @@ void run_application()
 	IPaddress srvadd;
     srvadd.port = 2000;
 	UDPpacket *p;
-    UDPpacket *pRecieve;
-    int recieveID;
-    int playerIndex;
+    UDPpacket *pRecive;
+    int myPlayerIndex;
     int state = 0; // 0 is start 1 is ongoing
+    Data gameData = {0};
  
     float x_newPos;
     float y_newPos;
-    int playerCount = 1;
     initialize_sdl();
     initialize_sdl_mixer();
 
@@ -211,7 +217,7 @@ void run_application()
 	}
 
 
-    if (!((p = SDLNet_AllocPacket(512))&& (pRecieve = SDLNet_AllocPacket(512))))    // two packets are allocated, one for sending data and one for receiving data, packet size 512
+    if (!((p = SDLNet_AllocPacket(512))&& (pRecive = SDLNet_AllocPacket(512))))    // two packets are allocated, one for sending data and one for receiving data, packet size 512
 	{
 		fprintf(stderr, "SDLNet_AllocPacket: %s\n", SDLNet_GetError());
 		exit(EXIT_FAILURE);
@@ -298,22 +304,20 @@ void run_application()
                 SDL_RenderPresent(renderer);
 
                 if(play_button_pressed == 1){
-                    printf("IM HERE");
+                    printf("button pressed\n");
                     p->address.host = (srvadd).host;
                     p->address.port = (srvadd).port; 
-                    p->len = strlen((char *)p->data) + 1;
+                    p->len = strlen(p->data) + 1;
                     SDLNet_UDP_Send(sd, -1, p);
                     play_button_pressed++;
                 }
-                if(SDLNet_UDP_Recv(sd, pRecieve)){
-                    int message;
-                    sscanf((char *)pRecieve->data, "%d", &message);
-                    printf("MESSAGE %d", message);
-                    if(message < 5 && message >= 1){
-                        playerIndex = message;
-                        printf("MY PLAYER INDEX %d\n", playerIndex);
+                if(SDLNet_UDP_Recv(sd, pRecive)){
+                    memcpy(&gameData, pRecive->data, sizeof(Data));
+                    if(gameData.playerIndex < 5 && gameData.playerIndex >= 1){
+                        myPlayerIndex = gameData.playerIndex;
+                        printf("MY PLAYER INDEX %d\n", myPlayerIndex);
                     }
-                    if(message==5){
+                    if(gameData.playerIndex==5){
                         state = 1;
                     }
 
@@ -321,13 +325,13 @@ void run_application()
                 break;
 
                 case 1:
-                    float x_oldPos = paddles[playerIndex-1]->x;
-                    float y_oldPos = paddles[playerIndex-1]->y;
+                    float x_oldPos = paddles[myPlayerIndex-1]->x;
+                    float y_oldPos = paddles[myPlayerIndex-1]->y;
 
                     handle_events(event, &quit, &play_button_pressed, play_button_rect);
                     SDL_RenderClear(renderer);
 
-                    update_objects(&ball, paddles, renderer, 0.018f, playerIndex);
+                    update_objects(&ball, paddles, renderer, 0.018f, myPlayerIndex, &gameData);
 
                     if (!game_over)
                     {
@@ -362,36 +366,69 @@ void run_application()
                     SDL_RenderPresent(renderer);
 
 
-                    x_newPos = paddles[playerIndex-1]->x;
-                    y_newPos = paddles[playerIndex-1]->y;
+                    x_newPos = paddles[myPlayerIndex-1]->x;
+                    y_newPos = paddles[myPlayerIndex-1]->y;
                     if(x_oldPos != x_newPos || y_oldPos != y_newPos){
+                        printf("sent new position\n");
 
-                        printf("Flag TO SEND -----------\n");
+                        //printf("Flag TO SEND -----------\n");
                         //the host will send this data
-                        printf("New: %f %f Old: %f %f\n", x_newPos, y_newPos, x_oldPos, y_newPos);
-
-                        sprintf((char *)p->data, "%d %f %f \n",playerIndex, x_newPos, y_newPos);
+                        //printf("New: %f %f Old: %f %f\n", x_newPos, y_newPos, x_oldPos, y_newPos);
+                        if(myPlayerIndex == 1){
+                            gameData.downPaddle_x = x_newPos;
+                            gameData.downPaddle_y = y_newPos;
+                        }else if(myPlayerIndex == 2){
+                            gameData.rightPaddle_x = x_newPos;
+                            gameData.rightPaddle_y = y_newPos;
+                        }else if(myPlayerIndex == 3){
+                            gameData.upPaddle_x = x_newPos;
+                            gameData.upPaddle_y = y_newPos;
+                        }else{
+                            gameData.leftPaddle_x = x_newPos;
+                            gameData.leftPaddle_y = y_newPos;
+                        }
                         p->address.host = (srvadd).host;
                         p->address.port = (srvadd).port; 
-                        p->len = strlen((char *)p->data) + 1;
+                        memcpy(p->data, &gameData, sizeof(Data));
+                        p->len = sizeof(Data);
                         SDLNet_UDP_Send(sd, -1, p);
                         x_oldPos = x_newPos;
                         y_oldPos = y_newPos;
                     }  
                     
-                    if(SDLNet_UDP_Recv(sd,pRecieve)){                 //receive the data as a client
-                        //printf("Flag 1 -----------");
-                        int otherPlayerIndex;
-                        float otherPlayerX, otherPlayerY;
-                        sscanf((char *)pRecieve->data, "%d %f %f",&otherPlayerIndex, &otherPlayerX, &otherPlayerY);   
-                        printf("Flag RECIEVED %d %f %f \n",otherPlayerIndex, otherPlayerX, otherPlayerY);
-                        moveAllPaddles(paddles, otherPlayerIndex, otherPlayerX, otherPlayerY);
-                        render_ball(&ball, renderer);
+                    if(SDLNet_UDP_Recv(sd,pRecive)){                 //receive the data as a client
+                        
+                        //printf("Flag RECIEVED\n");
+                        memcpy(&gameData, pRecive->data, sizeof(Data));
+                        /*printf("Data: %d %f %f %f %f %f %f %f %f %f %f\n", gameData.playerIndex, gameData.downPaddle_x, 
+                    gameData.downPaddle_y, gameData.leftPaddle_x, gameData.leftPaddle_y, gameData.rightPaddle_x, 
+                    gameData.rightPaddle_y, gameData.upPaddle_x, gameData.upPaddle_y, gameData.ball_x, gameData.ball_y);*/
+                        /*if(gameData.downPaddle_x != paddles[0]->x  && myPlayerIndex != 1){
+                            
+                            moveAllPaddles(paddles, &gameData, myPlayerIndex);
+                        } 
+                        if(gameData.rightPaddle_y != paddles[1]->y && myPlayerIndex != 2 ){
+                            
+                            moveAllPaddles(paddles, &gameData, myPlayerIndex);
+                        } 
+                        if(gameData.upPaddle_x != paddles[2]->x && myPlayerIndex != 3 ){
+                            
+                            moveAllPaddles(paddles, &gameData, myPlayerIndex);
+                        } 
+                        if(gameData.leftPaddle_y != paddles[3]->y && myPlayerIndex != 3 ){
+                            
+                            moveAllPaddles(paddles, &gameData, myPlayerIndex);
+                        } */
+                        moveAllPaddles(paddles, &gameData, myPlayerIndex);
+                        ball.x = gameData.ball_x;
+                        ball.y = gameData.ball_y;
+                        /*render_ball(&ball, renderer);
                         render_paddle(paddles[0], renderer);
                         render_paddle(paddles[1], renderer);
                         render_paddle(paddles[2], renderer);
-                        render_paddle(paddles[3], renderer);
+                        render_paddle(paddles[3], renderer);*/
                     }
+                    break;
 
         }
 

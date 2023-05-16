@@ -14,7 +14,7 @@ int live_chance_paddle2 = 0;
 int live_chance_paddle3 =0; 
 int live_chance_paddle4 = 0; 
 
-int point_gameOver = 3;
+int point_gameOver = 100000000;
 
 
 void initPlayers(Player *all_players_info) {                   // Set alla plyers score zero i början
