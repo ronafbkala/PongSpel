@@ -363,8 +363,7 @@ void run_application()
                     y_newPos = paddles[myPlayerIndex-1]->y;
 
                     if(x_oldPos != x_newPos || y_oldPos != y_newPos){
-                        printf("Flag TO SEND -----------\n");
-                        //the host will send this data
+                        //printf("Flag TO SEND -----------\n");
                         //printf("New: %f %f Old: %f %f\n", x_newPos, y_newPos, x_oldPos, y_newPos);
                         if(myPlayerIndex == 1){
                             gameData.downPaddle_x = x_newPos;
@@ -390,28 +389,13 @@ void run_application()
                     
                     if(SDLNet_UDP_Recv(sd,pRecive)){                 //receive the data as a client
                         
-                        printf("Flag RECIEVED\n");
+                        //printf("Flag RECIEVED\n");
                         
                         memcpy(&gameData, pRecive->data, sizeof(Data));
                         /*printf("Data: %d %f %f %f %f %f %f %f %f %f %f\n", gameData.playerIndex, gameData.downPaddle_x, 
                     gameData.downPaddle_y, gameData.leftPaddle_x, gameData.leftPaddle_y, gameData.rightPaddle_x, 
                     gameData.rightPaddle_y, gameData.upPaddle_x, gameData.upPaddle_y, gameData.ball_x, gameData.ball_y);*/
-                        /*if(gameData.downPaddle_x != paddles[0]->x  && myPlayerIndex != 1){
-                            
-                            moveAllPaddles(paddles, &gameData, myPlayerIndex);
-                        } 
-                        if(gameData.rightPaddle_y != paddles[1]->y && myPlayerIndex != 2 ){
-                            
-                            moveAllPaddles(paddles, &gameData, myPlayerIndex);
-                        } 
-                        if(gameData.upPaddle_x != paddles[2]->x && myPlayerIndex != 3 ){
-                            
-                            moveAllPaddles(paddles, &gameData, myPlayerIndex);
-                        } 
-                        if(gameData.leftPaddle_y != paddles[3]->y && myPlayerIndex != 3 ){
-                            
-                            moveAllPaddles(paddles, &gameData, myPlayerIndex);
-                        } */
+                        
                         if(paddles[0]->x != gameData.downPaddle_x || paddles[1]->y != gameData.rightPaddle_y || paddles[2]->x != gameData.upPaddle_x || paddles[3]->y != gameData.leftPaddle_y){
                             moveAllPaddles(paddles, &gameData, myPlayerIndex);
                         } 
@@ -438,7 +422,6 @@ void run_application()
         }
         
         
-        //printf("Flag 2 --------------------------- ");
         
     }
 

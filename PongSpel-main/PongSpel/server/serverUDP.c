@@ -49,7 +49,7 @@ int main(int argc, char **argv)
 	UDPpacket *pSend;
 
 
-	IPaddress clients[4];
+	IPaddress clients[4] = {0};
 	int nrOfClients = 0;
 
 	int state = 0; // 0 is start 1 is ongoing
@@ -57,6 +57,7 @@ int main(int argc, char **argv)
 	int quit;
 
 	Data gameData = {0, 400, 590, 790, 200, 400, 10, 10, 200, 400, 300};
+	float currBallx, currBally;
 	
 
 
@@ -124,6 +125,8 @@ int main(int argc, char **argv)
 	
 					if(SDLNet_UDP_Recv(sd, pRecive)){
 					memcpy(&gameData, pRecive->data, sizeof(Data));
+					gameData.ball_x = currBallx;
+					gameData.ball_y = currBally;
 					update_ball(&gameData);
 					memcpy(pSend->data, &gameData, sizeof(Data));
 					pSend->len = sizeof(Data);
@@ -141,6 +144,8 @@ int main(int argc, char **argv)
 							SDLNet_UDP_Send(sd, -1, pSend);
 						}
 					}
+					currBallx = gameData.ball_x;
+					currBally = gameData.ball_y;
 					break;
 			}
 		frameTime = SDL_GetTicks() - frameStart;
