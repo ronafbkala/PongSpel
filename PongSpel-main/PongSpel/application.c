@@ -343,9 +343,9 @@ void run_application()
 
 
     Player all_players_info[4];                // struct för att lagra alla spelarens info  
-    initPlayers(all_players_info);              // To Set alla plyers score to zero frön början 
+    initializeScore(all_players_info);           // To Set alla plyers score to zero frön början
+;               
 
-    printScore(renderer, font, all_players_info, window);
 
     while (!quit) 
     {
@@ -424,6 +424,7 @@ void run_application()
                     float y_oldPos = paddles[myPlayerIndex-1]->y;
                     if (!game_over)
                     {
+                        drawScore(all_players_info, font, renderer,window);
                         if (check_collision(&ball, paddles[0], paddles[1], paddles[2], paddles[3], all_players_info, renderer, font, window) == 1)     // return 1 när en spelare förlorar
                         {          
                             track++;
