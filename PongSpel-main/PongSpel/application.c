@@ -111,13 +111,14 @@ void set_play_button_rect(SDL_Window *window, SDL_Rect *play_button_rect)
     play_button_rect->y -= play_button_rect->h / 2;
 }
 
-void handle_events(SDL_Event event, int *quit, int *play_button_pressed, SDL_Rect play_button_rect)
+void handle_events(SDL_Event event, int *quit, int *playButton, int *closeButton, int *joinButton, int *infoButton,  SDL_Rect playRect, SDL_Rect closeRect, SDL_Rect  joinRect, SDL_Rect infoRect, int *infoShown)
 {
     while (SDL_PollEvent(&event))
     {
         if (event.type == SDL_QUIT)
         {
             *quit = 1;
+            *closeButton=1;
         }
         else if (event.type == SDL_MOUSEBUTTONDOWN)
         {
@@ -125,13 +126,43 @@ void handle_events(SDL_Event event, int *quit, int *play_button_pressed, SDL_Rec
             int y = event.button.y;
 
             // Check if the mouse click was inside the Play button
-            if (x >= play_button_rect.x && x <= play_button_rect.x + play_button_rect.w &&
-                y >= play_button_rect.y && y <= play_button_rect.y + play_button_rect.h)
+            if (is_point_in_rect(x, y, playRect))
             {
-                *play_button_pressed = 1;
+                *playButton = 1;
+            }
+
+            // Check if the mouse click was inside the Close button
+            if (is_point_in_rect(x, y, closeRect))
+            {
+                *closeButton = 1;
+            }
+
+            // Check if the mouse click was inside the Join button
+            if (is_point_in_rect(x, y, joinRect))
+            {
+                *joinButton = 1;
+                //*playButton = 0;
+                
+            }
+
+            // Check if the mouse click was inside the Info button
+            if (is_point_in_rect(x, y, infoRect))
+            {
+                *infoButton = 1;
+                *infoShown = 1; // Set infoShown to 1 to indicate that the instruction image should be shown
+                         
+            } 
+        }
+        else if (event.type == SDL_KEYDOWN)
+        {
+            if (event.key.keysym.sym == SDLK_RETURN) // Check if the pressed key is the Enter key
+            {
+                *infoShown = 0; // Set infoShown to 0 to return to the previous screen
             }
         }
+        
     }
+    
 }
 
 void update_objects(Ball *ball, Paddle *paddles[], SDL_Renderer *renderer, float deltaTime, int playerIndex, Data *gameData)
@@ -172,6 +203,40 @@ void moveAllPaddles (Paddle* paddles[], Data *gameData, int myPlayerIndex)
         paddles[3]->y = gameData->leftPaddle_y;
     }
 
+}
+void update_background(SDL_Renderer *renderer, SDL_Texture *background_texture, int *background_offset)
+{
+    // Update the background offset
+    *background_offset += 1;
+
+    // Get the width and height of the background image
+    int background_width, background_height;
+    SDL_QueryTexture(background_texture, NULL, NULL, &background_width, &background_height);
+
+    // Wrap the background offset around if it exceeds the width of the background image
+    if (*background_offset > background_width)
+        *background_offset = *background_offset % background_width;
+
+    // Render the background
+    SDL_Rect source_rect = { *background_offset, 0, background_width - *background_offset, background_height };
+    SDL_Rect dest_rect = { 0, 0, background_width - *background_offset, background_height };
+    SDL_RenderCopy(renderer, background_texture, &source_rect, &dest_rect);
+
+    // If there is any remaining space, render the rest of the background
+    if (background_width - *background_offset < background_width)
+    {
+        source_rect.x = 0;
+        source_rect.y = 0;
+        source_rect.w = *background_offset;
+        source_rect.h = background_height;
+
+        dest_rect.x = background_width - *background_offset;
+        dest_rect.y = 0;
+        dest_rect.w = *background_offset;
+        dest_rect.h = background_height;
+
+        SDL_RenderCopy(renderer, background_texture, &source_rect, &dest_rect);
+    }
 }
 
 void run_application()
@@ -235,20 +300,23 @@ void run_application()
 
     SDL_Window *window = create_window();
     SDL_Renderer *renderer = create_renderer(window);
-
-    set_render_draw_color(renderer);
-
     Ball ball;
     Paddle *paddles[4];
     initialize_game_objects(renderer, &ball, paddles);
-
-    SDL_Texture *play_button_texture = load_texture(renderer, "play.png");
+	
+    SDL_Texture *background_texture = load_texture(renderer, "moving-background.png");
+    SDL_Texture *play_button_texture = load_texture(renderer, "image3.png");
     SDL_Texture *game_over_texture = load_texture(renderer, "game_over.jpg");
+    SDL_Texture *exit_texture = load_texture(renderer, "exit2.png");
+    SDL_Texture *join_texture = load_texture(renderer, "join.png");
+    SDL_Texture *info_texture = load_texture(renderer, "information.png");
+    SDL_Texture *instruction_texture = load_texture(renderer, "instruction.png");
 
-    // Set the Play button position and size
-    SDL_Rect play_button_rect;
-    SDL_QueryTexture(play_button_texture, NULL, NULL, &play_button_rect.w, &play_button_rect.h);
-    set_play_button_rect(window, &play_button_rect);
+    // Set button position and size
+    SDL_Rect play_rect ={310, 265, 180, 70 };
+    SDL_Rect close_rect ={310, 350, 180, 70 };
+    SDL_Rect join_rect ={310, 50, 180, 70 };
+    SDL_Rect info_rect ={310, 150, 180, 70 };
 
 
 
@@ -258,7 +326,7 @@ void run_application()
         
     }
 
-    TTF_Font* font = TTF_OpenFont("C:\\Windows\\Fonts\\arial.ttf", 16);  // för att ladda ett TrueType-teckensnitt från en teckensnittsfil på disken.
+    TTF_Font* font = TTF_OpenFont("C:\\Windows\\Fonts\\arial.ttf", 50);  // för att ladda ett TrueType-teckensnitt från en teckensnittsfil på disken.
         if (!font) {
             SDL_Log("Failed to load font: %s", TTF_GetError());
             return;
@@ -266,11 +334,23 @@ void run_application()
 
     ///////////////////////////////////////-2-
     int quit = 0;
-    int play_button_pressed = 0;
+    int play_pressed = 0;
+    int close_pressed = 0;
+    int join_pressed = 0;
+    int info_pressed = 0;
+    int infoShown = 0;
+    int joinTextShown = 0;
     int game_over = 0;
     int track = 0;
     int otherPaddleIndex;
     float timer = 5; 
+     int background_x =0;
+	
+    SDL_Color textColor = { 255, 215, 0, 255 };
+    SDL_Surface* textSurface = TTF_RenderText_Solid(font, "Waiting for all clients", textColor);
+    SDL_Texture* textTexture = SDL_CreateTextureFromSurface(renderer, textSurface);    
+    SDL_FreeSurface(textSurface);
+    SDL_Rect textRect = { 800 / 2 - textSurface->w / 2, 600 / 2 - textSurface->h / 2, textSurface->w, textSurface->h };
 
 
     //int all_players_points[4]={0};           // Array för att lagra alla spelarens points 
@@ -284,30 +364,63 @@ void run_application()
         timer = timer + 0.01666667;
         frameStart = SDL_GetTicks();
         SDL_Event event;
+	handle_events(event, &quit, &play_pressed, &close_pressed, &join_pressed, &info_pressed, play_rect, close_rect, join_rect, info_rect, &infoShown);
+        SDL_RenderClear(renderer);
         switch (state){
             case 0:
                 // Move,render the ball and the paddle
                 Mix_HaltMusic();
                 // Stänger ner ljudsystemet
                 Mix_CloseAudio();
-                handle_events(event, &quit, &play_button_pressed, play_button_rect);
-                SDL_RenderClear(renderer);
                 //printf("%d", play_button_pressed);
                 if (!play_button_pressed)
                 {
                     // Draw the Play button image
+	            update_background(renderer, background_texture, &background_x);
                     SDL_RenderCopy(renderer, play_button_texture, NULL, &play_button_rect);
 
                 }
-                SDL_RenderPresent(renderer);
+		else{
+	            close_pressed = 0;
+                    SDL_DestroyTexture(exit_texture);
+                    SDL_DestroyTexture(play_button_texture);
 
-                if(play_button_pressed == 1){
+                    //SDL_RenderCopy(renderer, background_texture, NULL, NULL);
+                    update_background(renderer, background_texture, &background_x);
+                    SDL_RenderCopy(renderer, join_texture, NULL, &join_rect);
+                    SDL_RenderCopy(renderer, info_texture, NULL, &info_rect);
+		}
+			
+                if (infoShown)
+		{  
+		     close_pressed=0;
+		     SDL_RenderCopy(renderer, instruction_texture, NULL, NULL);  
+                }
+		 // Render the text every frame as long as joinTextShown is set to 1
+	        if(join_pressed){
+			info_pressed=0;
+			infoShown=0;
+			close_pressed=0;
+			SDL_DestroyTexture(background_texture);
+			SDL_DestroyTexture(join_texture);
+			SDL_DestroyTexture(info_texture);
+			SDL_RenderCopy(renderer, textTexture, NULL, &textRect);
+
+	           }
+		 if (!close_pressed)
+                   {
+			 // Draw the close button image
+			  SDL_RenderCopy(renderer, exit_texture, NULL, &close_rect);
+                    }
+                    
+
+                if(join_pressed == 1){
                     printf("button pressed\n");
                     p->address.host = (srvadd).host;
                     p->address.port = (srvadd).port; 
                     p->len = strlen(p->data) + 1;
                     SDLNet_UDP_Send(sd, -1, p);
-                    play_button_pressed++;
+                    join_pressed++;
                 }
                 if(SDLNet_UDP_Recv(sd, pRecive)){
                     memcpy(&gameData, pRecive->data, sizeof(Data));
@@ -325,19 +438,10 @@ void run_application()
                 case 1:
                     float x_oldPos = paddles[myPlayerIndex-1]->x;
                     float y_oldPos = paddles[myPlayerIndex-1]->y;
-
-                    handle_events(event, &quit, &play_button_pressed, play_button_rect);
-                    SDL_RenderClear(renderer);
-
                     if (!game_over)
                     {
-                        
-
-                        
-
                         if (check_collision(&ball, paddles[0], paddles[1], paddles[2], paddles[3], all_players_info, renderer, font, window) == 1)     // return 1 när en spelare förlorar
-                        {       
-                                
+                        {          
                             track++;
                             if (track == 3)
                             {
@@ -410,11 +514,9 @@ void run_application()
                     }
                     
                     update_objects(&ball, paddles, renderer, 0.018f, myPlayerIndex, &gameData);
-                    SDL_RenderPresent(renderer);
                     break;
-
         }
-
+         SDL_RenderPresent(renderer);
         frameTime = SDL_GetTicks() - frameStart;
         if (frameDelay > frameTime)
         {
@@ -432,8 +534,10 @@ void run_application()
     // Free resources
     SDL_DestroyTexture(game_over_texture);
     SDL_DestroyTexture(play_button_texture);
+    SDL_DestroyTexture(background_texture);
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
+    SDL_DestroyTexture(instruction_texture);
     Mix_FreeMusic(music);
     Mix_CloseAudio();
     SDL_Quit();
