@@ -74,10 +74,6 @@ SDL_Renderer *create_renderer(SDL_Window *window)
 }
 
 
-void set_render_draw_color(SDL_Renderer *renderer)
-{
-    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
-}
 ////////////////////////// vi ligger alla obj (4 paddle med olika positioner och ball i skärmen)
 void initialize_game_objects(SDL_Renderer *renderer, Ball *ball, Paddle **paddles)
 {
@@ -102,13 +98,10 @@ SDL_Texture *load_texture(SDL_Renderer *renderer, const char *path)
     return texture;
 }
 
-void set_play_button_rect(SDL_Window *window, SDL_Rect *play_button_rect)
+int is_point_in_rect(int x, int y, SDL_Rect rect)
 {
-    SDL_GetWindowSize(window, &play_button_rect->x, &play_button_rect->y);
-    play_button_rect->x /= 2;
-    play_button_rect->y /= 2;
-    play_button_rect->x -= play_button_rect->w / 2;
-    play_button_rect->y -= play_button_rect->h / 2;
+    return (x >= rect.x && x <= rect.x + rect.w &&
+            y >= rect.y && y <= rect.y + rect.h);
 }
 
 void handle_events(SDL_Event event, int *quit, int *playButton, int *closeButton, int *joinButton, int *infoButton,  SDL_Rect playRect, SDL_Rect closeRect, SDL_Rect  joinRect, SDL_Rect infoRect, int *infoShown)
@@ -239,6 +232,35 @@ void update_background(SDL_Renderer *renderer, SDL_Texture *background_texture, 
     }
 }
 
+
+void initializeSDLNet(UDPsocket* sd, IPaddress* srvadd, UDPpacket** p, UDPpacket** pRecieve)
+{
+	if (SDLNet_Init() < 0)
+	{
+		fprintf(stderr, "SDLNet_Init: %s\n", SDLNet_GetError());
+		exit(EXIT_FAILURE);
+	}
+
+	if (!(*sd = SDLNet_UDP_Open(0)))         // open a UDP socket
+	{
+		fprintf(stderr, "SDLNet_UDP_Open: %s\n", SDLNet_GetError());
+		printf("called from main");
+		exit(EXIT_FAILURE);
+	}
+
+	if (SDLNet_ResolveHost(srvadd, "127.0.0.1", 2000) == -1)
+	{
+		fprintf(stderr, "SDLNet_ResolveHost(192.0.0.1 2000): %s\n", SDLNet_GetError());
+		exit(EXIT_FAILURE);
+	}
+
+	if (!((*p = SDLNet_AllocPacket(512)) && (*pRecieve = SDLNet_AllocPacket(512))))    // two packets are allocated, one for sending data and one for receiving data, packet size 512
+	{
+		fprintf(stderr, "SDLNet_AllocPacket: %s\n", SDLNet_GetError());
+		exit(EXIT_FAILURE);
+	}
+}
+
 void run_application()
 {
 
@@ -255,38 +277,7 @@ void run_application()
     float y_newPos;
     initialize_sdl();
     initialize_sdl_mixer();
-
-  
-
-  
-  if (SDLNet_Init() < 0)            
-	{
-		fprintf(stderr, "SDLNet_Init: %s\n", SDLNet_GetError());           
-		exit(EXIT_FAILURE);                                                
-	} 
-
-    if (!(sd = SDLNet_UDP_Open(0)))         // open a UDP socket 
-	{
-		fprintf(stderr, "SDLNet_UDP_Open: %s\n", SDLNet_GetError());  
-        printf("called from main");
-		exit(EXIT_FAILURE);
-	}
-
-     
-	if (SDLNet_ResolveHost(&srvadd, "127.0.0.1", 2000) == -1)
-	{
-		fprintf(stderr, "SDLNet_ResolveHost(192.0.0.1 2000): %s\n", SDLNet_GetError());  // an error message is printed, If the host cannot be resolved
-		exit(EXIT_FAILURE);    
-	}
-
-
-    if (!((p = SDLNet_AllocPacket(512))&& (pRecive = SDLNet_AllocPacket(512))))    // two packets are allocated, one for sending data and one for receiving data, packet size 512
-	{
-		fprintf(stderr, "SDLNet_AllocPacket: %s\n", SDLNet_GetError());
-		exit(EXIT_FAILURE);
-	}
-
- 
+    initializeSDLNet(&sd, &srvadd, &p, &pRecive);
 
     Mix_Music *music = load_music();
     if (!music)
@@ -305,11 +296,11 @@ void run_application()
     initialize_game_objects(renderer, &ball, paddles);
 	
     SDL_Texture *background_texture = load_texture(renderer, "moving-background.png");
-    SDL_Texture *play_button_texture = load_texture(renderer, "image3.png");
+    SDL_Texture *play_button_texture = load_texture(renderer, "play.png");
     SDL_Texture *game_over_texture = load_texture(renderer, "game_over.jpg");
-    SDL_Texture *exit_texture = load_texture(renderer, "exit2.png");
+    SDL_Texture *exit_texture = load_texture(renderer, "exit.png");
     SDL_Texture *join_texture = load_texture(renderer, "join.png");
-    SDL_Texture *info_texture = load_texture(renderer, "information.png");
+    SDL_Texture *info_texture = load_texture(renderer, "info.png");
     SDL_Texture *instruction_texture = load_texture(renderer, "instruction.png");
 
     // Set button position and size
@@ -344,7 +335,7 @@ void run_application()
     int track = 0;
     int otherPaddleIndex;
     float timer = 5; 
-     int background_x =0;
+    int background_x =0;
 	
     SDL_Color textColor = { 255, 215, 0, 255 };
     SDL_Surface* textSurface = TTF_RenderText_Solid(font, "Waiting for all clients", textColor);
@@ -372,16 +363,14 @@ void run_application()
                 Mix_HaltMusic();
                 // Stänger ner ljudsystemet
                 Mix_CloseAudio();
-                //printf("%d", play_button_pressed);
-                if (!play_button_pressed)
-                {
+                if (!play_pressed){
                     // Draw the Play button image
-	            update_background(renderer, background_texture, &background_x);
-                    SDL_RenderCopy(renderer, play_button_texture, NULL, &play_button_rect);
+	                update_background(renderer, background_texture, &background_x);
+                    SDL_RenderCopy(renderer, play_button_texture, NULL, &play_rect);
 
                 }
-		else{
-	            close_pressed = 0;
+		        else{
+	                close_pressed = 0;
                     SDL_DestroyTexture(exit_texture);
                     SDL_DestroyTexture(play_button_texture);
 
@@ -389,28 +378,26 @@ void run_application()
                     update_background(renderer, background_texture, &background_x);
                     SDL_RenderCopy(renderer, join_texture, NULL, &join_rect);
                     SDL_RenderCopy(renderer, info_texture, NULL, &info_rect);
-		}
-			
+		        }
                 if (infoShown)
-		{  
-		     close_pressed=0;
-		     SDL_RenderCopy(renderer, instruction_texture, NULL, NULL);  
+		        {  
+                    close_pressed=0;
+                    SDL_RenderCopy(renderer, instruction_texture, NULL, NULL);  
                 }
-		 // Render the text every frame as long as joinTextShown is set to 1
-	        if(join_pressed){
-			info_pressed=0;
-			infoShown=0;
-			close_pressed=0;
-			SDL_DestroyTexture(background_texture);
-			SDL_DestroyTexture(join_texture);
-			SDL_DestroyTexture(info_texture);
-			SDL_RenderCopy(renderer, textTexture, NULL, &textRect);
-
-	           }
-		 if (!close_pressed)
-                   {
-			 // Draw the close button image
-			  SDL_RenderCopy(renderer, exit_texture, NULL, &close_rect);
+                // Render the text every frame as long as joinTextShown is set to 1
+                if(join_pressed){
+                    info_pressed=0;
+                    infoShown=0;
+                    close_pressed=0;
+                    SDL_DestroyTexture(background_texture);
+                    SDL_DestroyTexture(join_texture);
+                    SDL_DestroyTexture(info_texture);
+                    SDL_RenderCopy(renderer, textTexture, NULL, &textRect);
+                }
+		        if (!close_pressed)
+                {
+			        // Draw the close button image
+			        SDL_RenderCopy(renderer, exit_texture, NULL, &close_rect);
                     }
                     
 
