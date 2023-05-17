@@ -78,10 +78,10 @@ SDL_Renderer *create_renderer(SDL_Window *window)
 void initialize_game_objects(SDL_Renderer *renderer, Ball *ball, Paddle **paddles)
 {
     initialize_ball(ball, renderer);
-    paddles[0] = initialize_paddle(renderer);
-    paddles[1] = initialize_paddle2(renderer);
-    paddles[2] = initialize_paddle3(renderer);
-    paddles[3] = initialize_paddle4(renderer);
+    paddles[0] = initialize_paddle(renderer, 400, 590, 120, 25, 1);
+    paddles[1] = initialize_paddle(renderer, 790, 200, 25, 120, 2);
+    paddles[2] = initialize_paddle(renderer, 400, 10, 120, 25, 3);
+    paddles[3] = initialize_paddle(renderer, 10, 200, 25, 120, 4);
 }
 
 // för ladda alla objs bilder i skärmen ?
@@ -264,6 +264,18 @@ void initializeSDLNet(UDPsocket* sd, IPaddress* srvadd, UDPpacket** p, UDPpacket
 void run_application()
 {
 
+    int quit = 0;
+    int play_pressed = 0;
+    int close_pressed = 0;
+    int join_pressed = 0;
+    int info_pressed = 0;
+    int infoShown = 0;
+    int joinTextShown = 0;
+    int game_over = 0;
+    int track = 0;
+    int otherPaddleIndex;
+    float timer = 5; 
+    int background_x =0;
     UDPsocket sd;
 	IPaddress srvadd;
     srvadd.port = 2000;
@@ -308,43 +320,28 @@ void run_application()
     SDL_Rect close_rect ={310, 350, 180, 70 };
     SDL_Rect join_rect ={310, 50, 180, 70 };
     SDL_Rect info_rect ={310, 150, 180, 70 };
+    SDL_Color textColor = { 255, 215, 0, 255 };
 
 
 
 
-      if (TTF_Init() != 0) {                                 //använder SDL_ttf-biblioteket för att initiera ett TrueType-teckensnitt och ladda det från en teckensnittsfil på disken.
+    if (TTF_Init() != 0) {                                 //använder SDL_ttf-biblioteket för att initiera ett TrueType-teckensnitt och ladda det från en teckensnittsfil på disken.
         printf("TTF_Init() failed: %s\n", SDL_GetError());
         
     }
 
     TTF_Font* font = TTF_OpenFont("C:\\Windows\\Fonts\\arial.ttf", 50);  // för att ladda ett TrueType-teckensnitt från en teckensnittsfil på disken.
-        if (!font) {
-            SDL_Log("Failed to load font: %s", TTF_GetError());
-            return;
-        }
+    if (!font) {
+        SDL_Log("Failed to load font: %s", TTF_GetError());
+        return;
+    }
 
-    ///////////////////////////////////////-2-
-    int quit = 0;
-    int play_pressed = 0;
-    int close_pressed = 0;
-    int join_pressed = 0;
-    int info_pressed = 0;
-    int infoShown = 0;
-    int joinTextShown = 0;
-    int game_over = 0;
-    int track = 0;
-    int otherPaddleIndex;
-    float timer = 5; 
-    int background_x =0;
-	
-    SDL_Color textColor = { 255, 215, 0, 255 };
     SDL_Surface* textSurface = TTF_RenderText_Solid(font, "Waiting for all clients", textColor);
     SDL_Texture* textTexture = SDL_CreateTextureFromSurface(renderer, textSurface);    
     SDL_FreeSurface(textSurface);
     SDL_Rect textRect = { 800 / 2 - textSurface->w / 2, 600 / 2 - textSurface->h / 2, textSurface->w, textSurface->h };
 
 
-    //int all_players_points[4]={0};           // Array för att lagra alla spelarens points 
     Player all_players_info[4];                // struct för att lagra alla spelarens info  
     initPlayers(all_players_info);              // To Set alla plyers score to zero frön början 
 
@@ -402,7 +399,7 @@ void run_application()
                     
 
                 if(join_pressed == 1){
-                    printf("button pressed\n");
+                    printf("Button 'join' pressed\n");
                     p->address.host = (srvadd).host;
                     p->address.port = (srvadd).port; 
                     p->len = strlen(p->data) + 1;
@@ -449,7 +446,7 @@ void run_application()
                             game_over =1; 
                         
                         }
-                    update_paddle(paddles[0], paddles[1], paddles[2], paddles[3], 0.018f, myPlayerIndex);                           
+                    update_paddle(paddles[myPlayerIndex-1], 0.018f, myPlayerIndex);                           
                     x_newPos = paddles[myPlayerIndex-1]->x;
                     y_newPos = paddles[myPlayerIndex-1]->y;
 
@@ -484,8 +481,8 @@ void run_application()
                         
                         memcpy(&gameData, pRecive->data, sizeof(Data));
                         /*printf("Data: %d %f %f %f %f %f %f %f %f %f %f\n", gameData.playerIndex, gameData.downPaddle_x, 
-                    gameData.downPaddle_y, gameData.leftPaddle_x, gameData.leftPaddle_y, gameData.rightPaddle_x, 
-                    gameData.rightPaddle_y, gameData.upPaddle_x, gameData.upPaddle_y, gameData.ball_x, gameData.ball_y);*/
+                        gameData.downPaddle_y, gameData.leftPaddle_x, gameData.leftPaddle_y, gameData.rightPaddle_x, 
+                        gameData.rightPaddle_y, gameData.upPaddle_x, gameData.upPaddle_y, gameData.ball_x, gameData.ball_y);*/
                         
                         if(paddles[0]->x != gameData.downPaddle_x || paddles[1]->y != gameData.rightPaddle_y || paddles[2]->x != gameData.upPaddle_x || paddles[3]->y != gameData.leftPaddle_y){
                             moveAllPaddles(paddles, &gameData, myPlayerIndex);
@@ -515,9 +512,10 @@ void run_application()
     }
 
     // Free game objects
-    destroy_ball(&ball);
-    // destroy_paddle(paddles[0], paddles[1], paddles[2], paddles[3]);
-
+    /*destroy_ball(&ball);
+    for(int i=0; i<4 ; i++){
+        destroy_paddle(Paddle* paddle[i]);
+    }*/
     // Free resources
     SDL_DestroyTexture(game_over_texture);
     SDL_DestroyTexture(play_button_texture);

@@ -15,13 +15,10 @@ typedef struct {
     SDL_Texture* texture;
 } Paddle;
 
-Paddle* initialize_paddle(SDL_Renderer* renderer);
-Paddle* initialize_paddle2(SDL_Renderer* renderer);
-Paddle* initialize_paddle3(SDL_Renderer* renderer);
-Paddle* initialize_paddle4(SDL_Renderer* renderer);
-void update_paddle(Paddle* paddle, Paddle* paddle2, Paddle* paddle3, Paddle* paddle4, float delta_time, int playerIndex);
+Paddle* initialize_paddle(SDL_Renderer* renderer, int x, int y, int width, int height, int index);
+void update_paddle(Paddle* paddle, float delta_time, int playerIndex);
 void render_paddle(Paddle* paddle, SDL_Renderer* renderer);
-void destroy_paddle(Paddle* paddle, Paddle* paddle2, Paddle* paddle3, Paddle* paddle4);
+void destroy_paddle(Paddle* paddle);
 
 #endif
 
