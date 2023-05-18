@@ -344,7 +344,7 @@ void run_application()
 
     Player all_players_info[4];                // struct för att lagra alla spelarens info  
     initializeScore(all_players_info);           // To Set alla plyers score to zero frön början
-;               
+          
 
 
     while (!quit && !close_pressed) 
