@@ -347,12 +347,12 @@ void run_application()
 ;               
 
 
-    while (!quit) 
+    while (!quit && !close_pressed) 
     {
         timer = timer + 0.01666667;
         frameStart = SDL_GetTicks();
         SDL_Event event;
-	handle_events(event, &quit, &play_pressed, &close_pressed, &join_pressed, &info_pressed, play_rect, close_rect, join_rect, info_rect, &infoShown);
+	    handle_events(event, &quit, &play_pressed, &close_pressed, &join_pressed, &info_pressed, play_rect, close_rect, join_rect, info_rect, &infoShown);
         SDL_RenderClear(renderer);
         switch (state){
             case 0:
