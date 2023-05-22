@@ -277,13 +277,14 @@ void run_application()
     float timer = 5; 
     int background_x =0;
     UDPsocket sd;
-	IPaddress srvadd;
+    IPaddress srvadd;
     srvadd.port = 2000;
-	UDPpacket *p;
+    UDPpacket *p;
     UDPpacket *pRecive;
     int myPlayerIndex;
     int state = 0; // 0 is start 1 is ongoing
     Data gameData = {0};
+    const int numPlayers = 4;
  
     float x_newPos;
     float y_newPos;
@@ -422,10 +423,11 @@ void run_application()
                 case 1:
                     float x_oldPos = paddles[myPlayerIndex-1]->x;
                     float y_oldPos = paddles[myPlayerIndex-1]->y;
-                    if (!game_over)
-                    {
+                    //if (!game_over)
+                   // {
                         drawScore(all_players_info, font, renderer,window);
-                        if (check_collision(&ball, paddles[0], paddles[1], paddles[2], paddles[3], all_players_info, renderer, font, window) == 1)     // return 1 när en spelare förlorar
+			    (check_collision(&ball, paddles[0], paddles[1], paddles[2], paddles[3], all_players_info, renderer, font, window) == 1);
+                       /* if (check_collision(&ball, paddles[0], paddles[1], paddles[2], paddles[3], all_players_info, renderer, font, window) == 1)     // return 1 när en spelare förlorar
                         {          
                             track++;
                             if (track == 3)
@@ -433,20 +435,14 @@ void run_application()
                                 // Stoppar musiken
                                 
                             }
-                        }
-                    
-                    } if (track == 3)
-            
-                        {
-                            SDL_Rect game_over_rect = {0, 0, 300, 100};
-                            SDL_GetWindowSize(window, &game_over_rect.w, &game_over_rect.h);
-                            game_over_rect.x = (game_over_rect.w - game_over_rect.w) / 2;
-                            game_over_rect.y = (game_over_rect.h - game_over_rect.h) / 2;
-
-                            SDL_RenderCopy(renderer, game_over_texture, NULL, &game_over_rect);
-                            game_over =1; 
-                        
-                        }
+                        }*/
+	                //}
+                       int winnerIndex = -1;
+                      if (checkWinner(all_players_info, numPlayers, &winnerIndex)) {
+                       quit = 1;
+                       endGame(renderer, font, window, &winnerIndex);
+                      break;
+		      }
                     update_paddle(paddles[myPlayerIndex-1], 0.018f, myPlayerIndex);                           
                     x_newPos = paddles[myPlayerIndex-1]->x;
                     y_newPos = paddles[myPlayerIndex-1]->y;
