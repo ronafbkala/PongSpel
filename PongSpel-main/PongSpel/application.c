@@ -315,6 +315,7 @@ void run_application()
     SDL_Texture *join_texture = load_texture(renderer, "join.png");
     SDL_Texture *info_texture = load_texture(renderer, "info.png");
     SDL_Texture *instruction_texture = load_texture(renderer, "instruction.png");
+    SDL_Texture *win_texture = load_texture(renderer, "win.jpg");
 
     // Set button position and size
     SDL_Rect play_rect ={310, 265, 180, 70 };
@@ -439,8 +440,8 @@ void run_application()
 	                //}
                        int winnerIndex = -1;
                       if (checkWinner(all_players_info, numPlayers, &winnerIndex)) {
-                       quit = 1;
-                       endGame(renderer, font, window, &winnerIndex);
+                       //quit = 1;
+                       endGame(renderer, font, window, &winnerIndex, win_texture);
                       break;
 		      }
                     update_paddle(paddles[myPlayerIndex-1], 0.018f, myPlayerIndex);                           
@@ -517,6 +518,7 @@ void run_application()
     SDL_DestroyTexture(game_over_texture);
     SDL_DestroyTexture(play_button_texture);
     SDL_DestroyTexture(background_texture);
+    SDL_DestroyTexture(win_texture);
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
     SDL_DestroyTexture(instruction_texture);

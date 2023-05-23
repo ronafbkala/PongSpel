@@ -113,7 +113,7 @@ bool checkWinner(Player* all_players_info, int numPlayers, int* winnerIndex) {
 }
 
 
-void endGame(SDL_Renderer* renderer, TTF_Font* font, SDL_Window* window, int *winnerIndex) {
+void endGame(SDL_Renderer* renderer, TTF_Font* font, SDL_Window* window, int *winnerIndex, SDL_Texture *win_texture) {
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
     SDL_RenderClear(renderer);
     
@@ -126,6 +126,8 @@ void endGame(SDL_Renderer* renderer, TTF_Font* font, SDL_Window* window, int *wi
     int messageWidth = messageSurface->w;
     int messageHeight = messageSurface->h;
     SDL_Rect messageRect = { (800 - messageWidth) / 2, (600 - messageHeight) / 2, messageWidth, messageHeight };
+
+     SDL_RenderCopy(renderer, win_texture, NULL, NULL); 
     
     SDL_RenderCopy(renderer, messageTexture, NULL, &messageRect);
     
@@ -134,6 +136,10 @@ void endGame(SDL_Renderer* renderer, TTF_Font* font, SDL_Window* window, int *wi
     
     SDL_RenderPresent(renderer);
     
+    SDL_Delay(10000); // 10 seconds
+    
+    SDL_DestroyWindow(window);
+    SDL_Quit();
 }
 
 
