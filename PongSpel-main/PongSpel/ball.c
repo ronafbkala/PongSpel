@@ -28,7 +28,7 @@ void initialize_ball(Ball* ball, SDL_Renderer* renderer) {
     ball->dy = sinf(45 * PI / 180);
     ball->speed = 200;
     ball->radius = 25;
-    SDL_Surface* surface = IMG_Load("ball.png");
+    SDL_Surface* surface = IMG_Load("src/ball.png");
     ball->texture = SDL_CreateTextureFromSurface(renderer, surface);
     SDL_FreeSurface(surface);
 }

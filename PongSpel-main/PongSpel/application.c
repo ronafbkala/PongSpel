@@ -308,14 +308,13 @@ void run_application()
     Paddle *paddles[4];
     initialize_game_objects(renderer, &ball, paddles);
 	
-    SDL_Texture *background_texture = load_texture(renderer, "moving-background.png");
-    SDL_Texture *play_button_texture = load_texture(renderer, "play.png");
-    SDL_Texture *game_over_texture = load_texture(renderer, "game_over.jpg");
-    SDL_Texture *exit_texture = load_texture(renderer, "exit.png");
-    SDL_Texture *join_texture = load_texture(renderer, "join.png");
-    SDL_Texture *info_texture = load_texture(renderer, "info.png");
-    SDL_Texture *instruction_texture = load_texture(renderer, "instruction.png");
-    SDL_Texture *win_texture = load_texture(renderer, "win.jpg");
+    SDL_Texture *background_texture = load_texture(renderer, "src/moving-background.png");
+    SDL_Texture *play_button_texture = load_texture(renderer, "src/play.png");
+    SDL_Texture *exit_texture = load_texture(renderer, "src/exit.png");
+    SDL_Texture *join_texture = load_texture(renderer, "src/join.png");
+    SDL_Texture *info_texture = load_texture(renderer, "src/info.png");
+    SDL_Texture *instruction_texture = load_texture(renderer, "src/instruction.png");
+    SDL_Texture *win_texture = load_texture(renderer, "src/win.jpg");
 
     // Set button position and size
     SDL_Rect play_rect ={310, 265, 180, 70 };
@@ -515,7 +514,7 @@ void run_application()
         destroy_paddle(Paddle* paddle[i]);
     }*/
     // Free resources
-    SDL_DestroyTexture(game_over_texture);
+    
     SDL_DestroyTexture(play_button_texture);
     SDL_DestroyTexture(background_texture);
     SDL_DestroyTexture(win_texture);
