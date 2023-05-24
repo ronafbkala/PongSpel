@@ -56,8 +56,12 @@ int main(int argc, char **argv)
 
 	int quit;
 
-	Data gameData = {0, 400, 590, 790, 200, 400, 10, 10, 200, 400, 300};
+	Data gameData = {0, 400, 590, 400, 10, 790, 200, 10, 200, 400, 300};
 	float currBallx, currBally;
+    float downPaddlex, downPaddley;
+    float rightPaddlex, rightPaddley;
+    float upPaddlex, upPaddley;
+    float leftPaddlex, leftPaddley;
 	
 
 
@@ -124,7 +128,46 @@ int main(int argc, char **argv)
 				case 1:
 	
 					if(SDLNet_UDP_Recv(sd, pRecive)){
+                    downPaddlex = gameData.downPaddle_x;
+                    downPaddley = gameData.downPaddle_y;
+                    rightPaddlex = gameData.rightPaddle_x;
+                    rightPaddley = gameData.rightPaddle_y;
+                    upPaddlex = gameData.upPaddle_x;
+                    upPaddley = gameData.upPaddle_y;
+                    leftPaddlex = gameData.leftPaddle_x;
+                    leftPaddley = gameData.leftPaddle_y;
+
 					memcpy(&gameData, pRecive->data, sizeof(Data));
+                    if(gameData.playerIndex == 1){
+                        gameData.rightPaddle_x = rightPaddlex;
+                        gameData.rightPaddle_y = rightPaddley;
+                        gameData.upPaddle_x = upPaddlex;
+                        gameData.upPaddle_y = upPaddley;
+                        gameData.leftPaddle_x = leftPaddlex;
+                        gameData.leftPaddle_y = leftPaddley;
+                    } else if(gameData.playerIndex == 2){
+                        gameData.downPaddle_x = downPaddlex;
+                        gameData.downPaddle_y = downPaddley;
+                        gameData.upPaddle_x = upPaddlex;
+                        gameData.upPaddle_y = upPaddley;
+                        gameData.leftPaddle_x = leftPaddlex;
+                        gameData.leftPaddle_y = leftPaddley;
+                    } else if(gameData.playerIndex == 3){
+                        gameData.rightPaddle_x = rightPaddlex;
+                        gameData.rightPaddle_y = rightPaddley;
+                        gameData.downPaddle_x = downPaddlex;
+                        gameData.downPaddle_y = downPaddley;
+                        gameData.leftPaddle_x = leftPaddlex;
+                        gameData.leftPaddle_y = leftPaddley;
+                    }else if(gameData.playerIndex == 4){ 
+                        gameData.rightPaddle_x = rightPaddlex;
+                        gameData.rightPaddle_y = rightPaddley;
+                        gameData.upPaddle_x = upPaddlex;
+                        gameData.upPaddle_y = upPaddley;
+                        gameData.downPaddle_x = downPaddlex;
+                        gameData.downPaddle_y = downPaddley;
+                    }
+                
 					gameData.ball_x = currBallx;
 					gameData.ball_y = currBally;
 					update_ball(&gameData);
