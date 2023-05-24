@@ -307,14 +307,16 @@ void run_application()
     Ball ball;
     Paddle *paddles[4];
     initialize_game_objects(renderer, &ball, paddles);
+    int isPlayerAlive[4] = {1,1,1,1};
 	
-    SDL_Texture *background_texture = load_texture(renderer, "src/moving-background.png");
-    SDL_Texture *play_button_texture = load_texture(renderer, "src/play.png");
-    SDL_Texture *exit_texture = load_texture(renderer, "src/exit.png");
-    SDL_Texture *join_texture = load_texture(renderer, "src/join.png");
-    SDL_Texture *info_texture = load_texture(renderer, "src/info.png");
-    SDL_Texture *instruction_texture = load_texture(renderer, "src/instruction.png");
-    SDL_Texture *win_texture = load_texture(renderer, "src/win.jpg");
+    SDL_Texture *background_texture = load_texture(renderer, "moving-background.png");
+    SDL_Texture *play_button_texture = load_texture(renderer, "play.png");
+    SDL_Texture *game_over_texture = load_texture(renderer, "game_over.jpg");
+    SDL_Texture *exit_texture = load_texture(renderer, "exit.png");
+    SDL_Texture *join_texture = load_texture(renderer, "join.png");
+    SDL_Texture *info_texture = load_texture(renderer, "info.png");
+    SDL_Texture *instruction_texture = load_texture(renderer, "instruction.png");
+    SDL_Texture *win_texture = load_texture(renderer, "win.jpg");
 
     // Set button position and size
     SDL_Rect play_rect ={310, 265, 180, 70 };
@@ -443,7 +445,8 @@ void run_application()
                        endGame(renderer, font, window, &winnerIndex, win_texture);
                       break;
 		      }
-                    update_paddle(paddles[myPlayerIndex-1], 0.018f, myPlayerIndex);                           
+                    // if(paddles[myPlayerIndex-1]) 
+                    update_paddle(paddles[myPlayerIndex-1], 0.018f, myPlayerIndex);                             
                     x_newPos = paddles[myPlayerIndex-1]->x;
                     y_newPos = paddles[myPlayerIndex-1]->y;
 
@@ -463,6 +466,7 @@ void run_application()
                             gameData.leftPaddle_x = x_newPos;
                             gameData.leftPaddle_y = y_newPos;
                         }
+                        gameData.playerIndex = myPlayerIndex;
                         p->address.host = (srvadd).host;
                         p->address.port = (srvadd).port; 
                         memcpy(p->data, &gameData, sizeof(Data));
@@ -514,7 +518,7 @@ void run_application()
         destroy_paddle(Paddle* paddle[i]);
     }*/
     // Free resources
-    
+    SDL_DestroyTexture(game_over_texture);
     SDL_DestroyTexture(play_button_texture);
     SDL_DestroyTexture(background_texture);
     SDL_DestroyTexture(win_texture);
