@@ -6,6 +6,7 @@
 #include <SDL2/SDL.h>
 #include "SDL2/SDL_net.h"
 #include <math.h>
+#include <time.h>
 
 #define PI 3.14159265f 
 
@@ -36,8 +37,9 @@ int lastCollidedUpWall = 0;
 int lastCollidedLeftWall = 0;
 int lastCollidedRightWall = 0;
 
-float ball_dx = cosf(45 * PI / 180);
-float ball_dy = sinf(45 * PI / 180);
+float degrees; 
+float ball_dx; 
+float ball_dy; 
 
 void update_ball(Data *gamedata);
 
@@ -62,6 +64,15 @@ int main(int argc, char **argv)
     float rightPaddlex, rightPaddley;
     float upPaddlex, upPaddley;
     float leftPaddlex, leftPaddley;
+
+    time_t t;
+    srand((unsigned) time(&t));
+
+
+    degrees = rand() % 361;
+    //printf("start degrees %f\n", degrees);
+    ball_dx = cosf(degrees * PI / 180); // 270 up, 90 ner, 0 höger, 180 vänster
+    ball_dy = sinf(degrees * PI / 180);
 	
 
 
@@ -209,7 +220,7 @@ int main(int argc, char **argv)
 
 void update_ball(Data *gamedata){
 	float delta_time = 0.018;
-	float ball_speed = 200;
+	float ball_speed = 100;
 	float ball_radius = 25;
 
     
@@ -225,7 +236,7 @@ void update_ball(Data *gamedata){
     };
 
     SDL_Rect playerDownRect = {
-        .x = gamedata->downPaddle_x,
+        .x = gamedata->downPaddle_x - 40,
         .y = gamedata->downPaddle_y,
         .w = 120,
         .h = 25,
@@ -233,13 +244,13 @@ void update_ball(Data *gamedata){
 
     SDL_Rect playerRightRect = {
         .x = gamedata->rightPaddle_x,
-        .y = gamedata->rightPaddle_y,
+        .y = gamedata->rightPaddle_y - 40,
         .w = 25,
         .h = 120,
     };
 
     SDL_Rect playerUpRect = {
-        .x = gamedata->upPaddle_x,
+        .x = gamedata->upPaddle_x - 40,
         .y = gamedata->upPaddle_y,
         .w = 120,
         .h = 25,
@@ -247,17 +258,29 @@ void update_ball(Data *gamedata){
 
     SDL_Rect playerLeftRect = {
         .x = gamedata->leftPaddle_x,
-        .y = gamedata->leftPaddle_y,
+        .y = gamedata->leftPaddle_y - 40,
         .w = 25,
         .h = 120,
     };
 
+    float degreeFactor1;
+    float degreeFactor2 = 140/120;
 	// check collision with paddles
     if(SDL_HasIntersection(&ballRect, &playerDownRect)){
         if(!lastCollidedDown){
             //printf("Direction change down \n");
-            
-            ball_dy *= -1;
+           // printf("%f %f\n", gamedata->ball_x, gamedata->downPaddle_x);
+            degreeFactor1 = gamedata->ball_x - gamedata->downPaddle_x + 40;
+            if(degreeFactor1<0){
+                printf("negative\n");
+                degreeFactor1 *= -1;
+            } 
+            degrees = degreeFactor1 * degreeFactor2 + 200;
+            //printf("degreeFactor1: %f\n", degreeFactor1);
+            //printf("Degrees: %f\n", degrees);
+            ball_dx = cosf(degrees * PI / 180);
+            ball_dy = sinf(degrees * PI / 180);
+            //ball_dy *= -1;
             lastCollidedDown++;
             lastCollidedDownWall++;
         }            
@@ -273,7 +296,18 @@ void update_ball(Data *gamedata){
     if(SDL_HasIntersection(&ballRect, &playerRightRect)){
         if(!lastCollidedRight){
             //printf("Direction change right\n");
-            ball_dx *= -1;
+            //printf("%f %f\n", gamedata->ball_y, gamedata->rightPaddle_y);
+            degreeFactor1 = gamedata->ball_y - gamedata->rightPaddle_y + 40;
+            if(degreeFactor1<0){
+                printf("negative\n");
+                degreeFactor1 *= -1;
+            } 
+            degrees = 250 - (degreeFactor1 * degreeFactor2);
+            //printf("degreeFactor1: %f\n", degreeFactor1);
+            //printf("Degrees: %f\n", degrees);
+            ball_dx = cosf(degrees * PI / 180);
+            ball_dy = sinf(degrees * PI / 180);
+            //ball_dx *= -1;
             lastCollidedRight++;
             lastCollidedRightWall++;
         }
@@ -289,7 +323,18 @@ void update_ball(Data *gamedata){
     if(SDL_HasIntersection(&ballRect, &playerUpRect)){
         if(!lastCollidedUp){
             //printf("Direction change up\n");
-            ball_dy *= -1;
+            //printf("%f %f\n", gamedata->ball_x, gamedata->upPaddle_x);
+            degreeFactor1 = gamedata->ball_x - gamedata->upPaddle_x + 40;
+            if(degreeFactor1<0){
+                printf("negative\n");
+                degreeFactor1 *= -1;
+            } 
+            degrees = 160 - (degreeFactor1 * degreeFactor2);
+            //printf("degreeFactor1: %f\n", degreeFactor1);
+            //printf("Degrees: %f\n", degrees);
+            ball_dx = cosf(degrees * PI / 180);
+            ball_dy = sinf(degrees * PI / 180);
+            //ball_dy *= -1;
             lastCollidedUp++;
             lastCollidedUpWall++;
         }
@@ -304,9 +349,20 @@ void update_ball(Data *gamedata){
     if(SDL_HasIntersection(&ballRect, &playerLeftRect)){
         if(!lastCollidedLeft){
            //printf("Direction change left\n");
-           ball_dx *= -1;
-           lastCollidedLeft++;
-           lastCollidedLeftWall++;
+            //printf("%f %f\n", gamedata->ball_y, gamedata->leftPaddle_y);
+            degreeFactor1 = gamedata->ball_y - gamedata->leftPaddle_y + 40;
+            if(degreeFactor1<0){
+                printf("negative\n");
+                degreeFactor1 *= -1;
+            } 
+            degrees = 290 + (degreeFactor1 * degreeFactor2);
+            //printf("degreeFactor1: %f\n", degreeFactor1);
+            //printf("Degrees: %f\n", degrees);
+            ball_dx = cosf(degrees * PI / 180);
+            ball_dy = sinf(degrees * PI / 180);
+           //ball_dx *= -1;
+            lastCollidedLeft++;
+            lastCollidedLeftWall++;
         }
         lastCollidedDown = 0;
         lastCollidedRight = 0;
