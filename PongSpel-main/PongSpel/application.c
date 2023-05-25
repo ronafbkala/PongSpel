@@ -336,11 +336,9 @@ void run_application()
     SDL_FreeSurface(textSurface);
     SDL_Rect textRect = { 800 / 2 - textSurface->w / 2, 600 / 2 - textSurface->h / 2, textSurface->w, textSurface->h };
 
-    /*char paddleName[50];
-    SDL_Surface* textSurface1 = TTF_RenderText_Solid(font, paddleName, textColor);
-    SDL_Texture* textTexture1 = SDL_CreateTextureFromSurface(renderer, textSurface1);    
-    SDL_FreeSurface(textSurface1);
-    SDL_Rect textRect1 ={310, 350, 180, 70 };*/
+    
+    SDL_Surface* textSurface1 = TTF_RenderText_Solid(font, " ", textColor);
+    
 
     Player all_players_info[4];                // struct för att lagra alla spelarens info  
     initializeScore(all_players_info);           // To Set alla plyers score to zero frön början
@@ -386,28 +384,28 @@ void run_application()
                     SDL_DestroyTexture(info_texture);
                     SDL_RenderCopy(renderer, textTexture, NULL, &textRect);
                     if(myPlayerIndex == 1){
-                        SDL_Surface* textSurface1 = TTF_RenderText_Solid(font, "Down Paddle", textColor);
+                        textSurface1 = TTF_RenderText_Solid(font, "Down Paddle", textColor);
                         SDL_Texture* textTexture1 = SDL_CreateTextureFromSurface(renderer, textSurface1);    
                         SDL_FreeSurface(textSurface1);
-                        //SDL_Rect textRect1 ={310, 350, 180, 70 };
-                        //SDL_RenderCopy(renderer, textTexture1, NULL, &textRect1);
+                        SDL_Rect textRect1 ={310, 350, 180, 70 };
+                        SDL_RenderCopy(renderer, textTexture1, NULL, &textRect1);
                     }
-                    if(myPlayerIndex == 2){
-                        SDL_Surface* textSurface1 = TTF_RenderText_Solid(font, "Right Paddle", textColor);
+                    else if(myPlayerIndex == 2){
+                        textSurface1 = TTF_RenderText_Solid(font, "Right Paddle", textColor);
                         SDL_Texture* textTexture1 = SDL_CreateTextureFromSurface(renderer, textSurface1);    
                         SDL_FreeSurface(textSurface1);
-                        //SDL_Rect textRect1 ={310, 350, 180, 70 };
-                        //SDL_RenderCopy(renderer, textTexture1, NULL, &textRect1);
+                        SDL_Rect textRect1 ={310, 350, 180, 70 };
+                        SDL_RenderCopy(renderer, textTexture1, NULL, &textRect1);
                     }
-                    if(myPlayerIndex == 3){
+                    else if(myPlayerIndex == 3){
                         
                         SDL_Surface* textSurface1 = TTF_RenderText_Solid(font, "Up Paddle", textColor);
                         SDL_Texture* textTexture1 = SDL_CreateTextureFromSurface(renderer, textSurface1);    
                         SDL_FreeSurface(textSurface1);
-                        //SDL_Rect textRect1 ={310, 350, 180, 70 };
-                        //SDL_RenderCopy(renderer, textTexture1, NULL, &textRect1);
+                        SDL_Rect textRect1 ={310, 350, 180, 70 };
+                        SDL_RenderCopy(renderer, textTexture1, NULL, &textRect1);
                     }
-                    if(myPlayerIndex == 4){
+                    else if(myPlayerIndex == 4){
                         SDL_Surface* textSurface1 = TTF_RenderText_Solid(font, "Left Paddle", textColor);
                         SDL_Texture* textTexture1 = SDL_CreateTextureFromSurface(renderer, textSurface1);    
                         SDL_FreeSurface(textSurface1);
