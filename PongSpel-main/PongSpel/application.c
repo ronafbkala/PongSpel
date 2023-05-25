@@ -310,6 +310,7 @@ void run_application()
     SDL_Texture *join_texture = load_texture(renderer, "src/join.png");
     SDL_Texture *info_texture = load_texture(renderer, "src/info.png");
     SDL_Texture *instruction_texture = load_texture(renderer, "src/instruction1.png");
+    SDL_Texture *background_game_texture = load_texture(renderer, "src/background.jpg");
     SDL_Texture *win_texture = load_texture(renderer, "src/win.jpg");
 
     // Set button position and size
