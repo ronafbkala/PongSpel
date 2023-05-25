@@ -42,9 +42,9 @@ void initialize_sdl_mixer()
     }
 }
 
-Mix_Music *load_music()
+Mix_Music *load_music(char *sound)
 {
-    Mix_Music *music = Mix_LoadMUS("Cyberpunk_Moonlight_Sonata.mp3");
+    Mix_Music *music = Mix_LoadMUS(sound);
     if (!music)
     {
         SDL_Log("Failed to load music: %s", Mix_GetError());
@@ -53,14 +53,13 @@ Mix_Music *load_music()
     return music;
 }
 
-int play_music(Mix_Music *music)
+void play_music(Mix_Music *music)
 {
     if (Mix_PlayMusic(music, -1) < 0)
     {
         SDL_Log("Failed to play music: %s", Mix_GetError());
-        return 0;
+        
     }
-    return 1;
 }
 
 SDL_Window *create_window()
@@ -84,7 +83,7 @@ void initialize_game_objects(SDL_Renderer *renderer, Ball *ball, Paddle **paddle
     paddles[3] = initialize_paddle(renderer, 10, 200, 25, 120, 4);
 }
 
-// för ladda alla objs bilder i skärmen ?
+// för ladda alla objs bilder i skärmen
 SDL_Texture *load_texture(SDL_Renderer *renderer, const char *path)
 {
     SDL_Surface *surface = IMG_Load(path);
@@ -170,7 +169,12 @@ void update_objects(Ball *ball, Paddle *paddles[], SDL_Renderer *renderer, float
     render_paddle(paddles[3], renderer);
 }
 
-
+void initializeSDLTTF(){
+    if (TTF_Init() != 0) { //använder SDL_ttf-biblioteket för att initiera ett TrueType-teckensnitt och ladda det från en teckensnittsfil på disken.
+        printf("TTF_Init() failed: %s\n", SDL_GetError());
+        
+    }
+}
 
 void moveAllPaddles (Paddle* paddles[], Data *gameData, int myPlayerIndex)
 {
@@ -271,10 +275,7 @@ void run_application()
     int info_pressed = 0;
     int infoShown = 0;
     int joinTextShown = 0;
-    int game_over = 0;
     int track = 0;
-    int otherPaddleIndex;
-    float timer = 5; 
     int background_x =0;
     UDPsocket sd;
     IPaddress srvadd;
@@ -292,15 +293,9 @@ void run_application()
     initialize_sdl_mixer();
     initializeSDLNet(&sd, &srvadd, &p, &pRecive);
 
-    Mix_Music *music = load_music();
-    if (!music)
-    {
-        SDL_Log("Failed to load music");
-    }
-    if (!play_music(music))
-    {
-        SDL_Log("Failed to play music");
-    }
+    Mix_Music *music1 = load_music("src/waitingSong.mp3");
+    Mix_Music *music2 = load_music("src/backgroundSong.mp3");
+    Mix_Music *music3 = load_music("src/win.mp3");
 
     SDL_Window *window = create_window();
     SDL_Renderer *renderer = create_renderer(window);
@@ -314,7 +309,7 @@ void run_application()
     SDL_Texture *exit_texture = load_texture(renderer, "src/exit.png");
     SDL_Texture *join_texture = load_texture(renderer, "src/join.png");
     SDL_Texture *info_texture = load_texture(renderer, "src/info.png");
-    SDL_Texture *instruction_texture = load_texture(renderer, "src/instruction.png");
+    SDL_Texture *instruction_texture = load_texture(renderer, "src/instruction1.png");
     SDL_Texture *win_texture = load_texture(renderer, "src/win.jpg");
 
     // Set button position and size
@@ -327,10 +322,7 @@ void run_application()
 
 
 
-    if (TTF_Init() != 0) {                                 //använder SDL_ttf-biblioteket för att initiera ett TrueType-teckensnitt och ladda det från en teckensnittsfil på disken.
-        printf("TTF_Init() failed: %s\n", SDL_GetError());
-        
-    }
+    initializeSDLTTF();
 
     TTF_Font* font = TTF_OpenFont("C:\\Windows\\Fonts\\arial.ttf", 50);  // för att ladda ett TrueType-teckensnitt från en teckensnittsfil på disken.
     if (!font) {
@@ -338,11 +330,17 @@ void run_application()
         return;
     }
 
+
     SDL_Surface* textSurface = TTF_RenderText_Solid(font, "Waiting for all clients", textColor);
     SDL_Texture* textTexture = SDL_CreateTextureFromSurface(renderer, textSurface);    
     SDL_FreeSurface(textSurface);
     SDL_Rect textRect = { 800 / 2 - textSurface->w / 2, 600 / 2 - textSurface->h / 2, textSurface->w, textSurface->h };
 
+    /*char paddleName[50];
+    SDL_Surface* textSurface1 = TTF_RenderText_Solid(font, paddleName, textColor);
+    SDL_Texture* textTexture1 = SDL_CreateTextureFromSurface(renderer, textSurface1);    
+    SDL_FreeSurface(textSurface1);
+    SDL_Rect textRect1 ={310, 350, 180, 70 };*/
 
     Player all_players_info[4];                // struct för att lagra alla spelarens info  
     initializeScore(all_players_info);           // To Set alla plyers score to zero frön början
@@ -351,17 +349,12 @@ void run_application()
 
     while (!quit && !close_pressed) 
     {
-        timer = timer + 0.01666667;
         frameStart = SDL_GetTicks();
         SDL_Event event;
 	    handle_events(event, &quit, &play_pressed, &close_pressed, &join_pressed, &info_pressed, play_rect, close_rect, join_rect, info_rect, &infoShown);
         SDL_RenderClear(renderer);
         switch (state){
             case 0:
-                // Move,render the ball and the paddle
-                Mix_HaltMusic();
-                // Stänger ner ljudsystemet
-                Mix_CloseAudio();
                 if (!play_pressed){
                     // Draw the Play button image
 	                update_background(renderer, background_texture, &background_x);
@@ -370,10 +363,10 @@ void run_application()
                 }
 		        else{
 	                close_pressed = 0;
+
                     SDL_DestroyTexture(exit_texture);
                     SDL_DestroyTexture(play_button_texture);
 
-                    //SDL_RenderCopy(renderer, background_texture, NULL, NULL);
                     update_background(renderer, background_texture, &background_x);
                     SDL_RenderCopy(renderer, join_texture, NULL, &join_rect);
                     SDL_RenderCopy(renderer, info_texture, NULL, &info_rect);
@@ -392,6 +385,35 @@ void run_application()
                     SDL_DestroyTexture(join_texture);
                     SDL_DestroyTexture(info_texture);
                     SDL_RenderCopy(renderer, textTexture, NULL, &textRect);
+                    if(myPlayerIndex == 1){
+                        SDL_Surface* textSurface1 = TTF_RenderText_Solid(font, "Down Paddle", textColor);
+                        SDL_Texture* textTexture1 = SDL_CreateTextureFromSurface(renderer, textSurface1);    
+                        SDL_FreeSurface(textSurface1);
+                        //SDL_Rect textRect1 ={310, 350, 180, 70 };
+                        //SDL_RenderCopy(renderer, textTexture1, NULL, &textRect1);
+                    }
+                    if(myPlayerIndex == 2){
+                        SDL_Surface* textSurface1 = TTF_RenderText_Solid(font, "Right Paddle", textColor);
+                        SDL_Texture* textTexture1 = SDL_CreateTextureFromSurface(renderer, textSurface1);    
+                        SDL_FreeSurface(textSurface1);
+                        //SDL_Rect textRect1 ={310, 350, 180, 70 };
+                        //SDL_RenderCopy(renderer, textTexture1, NULL, &textRect1);
+                    }
+                    if(myPlayerIndex == 3){
+                        
+                        SDL_Surface* textSurface1 = TTF_RenderText_Solid(font, "Up Paddle", textColor);
+                        SDL_Texture* textTexture1 = SDL_CreateTextureFromSurface(renderer, textSurface1);    
+                        SDL_FreeSurface(textSurface1);
+                        //SDL_Rect textRect1 ={310, 350, 180, 70 };
+                        //SDL_RenderCopy(renderer, textTexture1, NULL, &textRect1);
+                    }
+                    if(myPlayerIndex == 4){
+                        SDL_Surface* textSurface1 = TTF_RenderText_Solid(font, "Left Paddle", textColor);
+                        SDL_Texture* textTexture1 = SDL_CreateTextureFromSurface(renderer, textSurface1);    
+                        SDL_FreeSurface(textSurface1);
+                        SDL_Rect textRect1 ={310, 350, 180, 70 };
+                        SDL_RenderCopy(renderer, textTexture1, NULL, &textRect1);
+                    }
                 }
 		        if (!close_pressed)
                 {
@@ -401,6 +423,7 @@ void run_application()
                     
 
                 if(join_pressed == 1){
+                    play_music(music1);
                     printf("Button 'join' pressed\n");
                     p->address.host = (srvadd).host;
                     p->address.port = (srvadd).port; 
@@ -415,6 +438,8 @@ void run_application()
                         printf("MY PLAYER INDEX %d\n", myPlayerIndex);
                     }
                     if(gameData.playerIndex==5){
+                        Mix_FreeMusic(music1);
+                        play_music(music2);
                         state = 1;
                     }
 
@@ -424,27 +449,24 @@ void run_application()
                 case 1:
                     float x_oldPos = paddles[myPlayerIndex-1]->x;
                     float y_oldPos = paddles[myPlayerIndex-1]->y;
-                    //if (!game_over)
-                   // {
-                        drawScore(all_players_info, font, renderer,window);
-			    (check_collision(&ball, paddles[0], paddles[1], paddles[2], paddles[3], all_players_info, renderer, font, window) == 1);
-                       /* if (check_collision(&ball, paddles[0], paddles[1], paddles[2], paddles[3], all_players_info, renderer, font, window) == 1)     // return 1 när en spelare förlorar
-                        {          
-                            track++;
-                            if (track == 3)
-                            {
-                                // Stoppar musiken
-                                
-                            }
-                        }*/
-	                //}
-                       int winnerIndex = -1;
-                      if (checkWinner(all_players_info, numPlayers, &winnerIndex)) {
-                       //quit = 1;
-                       endGame(renderer, font, window, &winnerIndex, win_texture);
-                      break;
-		      }
-                    // if(paddles[myPlayerIndex-1]) 
+                    drawScore(all_players_info, font, renderer,window);
+			        if (check_collision(&ball, paddles[0], paddles[1], paddles[2], paddles[3], all_players_info, renderer, font, window) == 1) // return 1 när en spelare förlorar
+                    {          
+                        track++;
+                        if (track == 3)
+                        {
+                            Mix_FreeMusic(music2);
+
+                            play_music(music3);
+                            
+                        }
+                    }
+                    int winnerIndex = -1;
+                    if (checkWinner(all_players_info, numPlayers, &winnerIndex)) {
+                    //quit = 1;
+                    endGame(renderer, font, window, &winnerIndex, win_texture);
+                    break;
+		            }
                     update_paddle(paddles[myPlayerIndex-1], 0.018f, myPlayerIndex);                             
                     x_newPos = paddles[myPlayerIndex-1]->x;
                     y_newPos = paddles[myPlayerIndex-1]->y;
@@ -523,7 +545,7 @@ void run_application()
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
     SDL_DestroyTexture(instruction_texture);
-    Mix_FreeMusic(music);
+    Mix_FreeMusic(music3);
     Mix_CloseAudio();
     SDL_Quit();
 }
