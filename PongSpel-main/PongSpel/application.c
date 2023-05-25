@@ -446,6 +446,7 @@ void run_application()
                 break;
 
                 case 1:
+                    SDL_RenderCopy(renderer, background_game_texture, NULL, NULL);
                     float x_oldPos = paddles[myPlayerIndex-1]->x;
                     float y_oldPos = paddles[myPlayerIndex-1]->y;
                     drawScore(all_players_info, font, renderer,window);
@@ -541,6 +542,7 @@ void run_application()
     SDL_DestroyTexture(play_button_texture);
     SDL_DestroyTexture(background_texture);
     SDL_DestroyTexture(win_texture);
+    SDL_DestroyTexture(background_game_texture);
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
     SDL_DestroyTexture(instruction_texture);
