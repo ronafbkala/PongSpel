@@ -16,7 +16,7 @@ Paddle* initialize_paddle(SDL_Renderer* renderer, int x, int y, int width, int h
     paddle->height = height;
     paddle->index = index;
     paddle->speed = 300;
-    SDL_Surface* surface = IMG_Load("src/paddleNeon.jpg");
+    SDL_Surface* surface = IMG_Load("src/paddle.png");
     paddle->texture = SDL_CreateTextureFromSurface(renderer, surface);
     SDL_FreeSurface(surface);
     return paddle;
