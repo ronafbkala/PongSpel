@@ -62,6 +62,18 @@ void play_music(Mix_Music *music)
     }
 }
 
+Mix_Chunk* loadSoundEffect(){
+
+Mix_Chunk *SoundEffect = Mix_LoadWAV("src/missBall.wav");
+ if(!SoundEffect)
+ {
+    SDL_Log("Faild to load sound effect : '%s' ", Mix_GetError());
+    return NULL; 
+ } 
+
+ return SoundEffect; 
+}
+
 SDL_Window *create_window()
 {
     return SDL_CreateWindow("My Pong Game", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 800, 600, SDL_WINDOW_SHOWN);
@@ -297,6 +309,8 @@ void run_application()
     Mix_Music *music2 = load_music("src/backgroundSong.mp3");
     Mix_Music *music3 = load_music("src/win.mp3");
 
+    Mix_Chunk *SoundEffect = loadSoundEffect();
+
     SDL_Window *window = create_window();
     SDL_Renderer *renderer = create_renderer(window);
     Ball ball;
@@ -450,7 +464,7 @@ void run_application()
                     float x_oldPos = paddles[myPlayerIndex-1]->x;
                     float y_oldPos = paddles[myPlayerIndex-1]->y;
                     drawScore(all_players_info, font, renderer,window);
-			        if (check_collision(&ball, paddles[0], paddles[1], paddles[2], paddles[3], all_players_info, renderer, font, window) == 1) // return 1 när en spelare förlorar
+			        if (check_collision(&ball, paddles[0], paddles[1], paddles[2], paddles[3], all_players_info, renderer, font, window, SoundEffect) == 1) // return 1 när en spelare förlorar
                     {          
                         track++;
                         if (track == 3)
@@ -547,6 +561,7 @@ void run_application()
     SDL_DestroyWindow(window);
     SDL_DestroyTexture(instruction_texture);
     Mix_FreeMusic(music3);
+    Mix_FreeChunk(SoundEffect); 
     Mix_CloseAudio();
     SDL_Quit();
 }
