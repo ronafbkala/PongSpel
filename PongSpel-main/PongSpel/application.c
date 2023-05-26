@@ -336,6 +336,7 @@ void run_application()
     SDL_Texture* textTexture = SDL_CreateTextureFromSurface(renderer, textSurface);    
     SDL_FreeSurface(textSurface);
     SDL_Rect textRect = { 800 / 2 - textSurface->w / 2, 600 / 2 - textSurface->h / 2, textSurface->w, textSurface->h };
+     SDL_Delay(7000);
 
     
     SDL_Surface* textSurface1 = TTF_RenderText_Solid(font, " ", textColor);
